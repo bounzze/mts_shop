@@ -279,6 +279,17 @@ cart-drawer .cart-drawer__close,
   z-index: 0;
 }
 
+/*
+ * Hide any background image/video the Shopify editor may have stored —
+ * the yellow stripe pattern is the hero background, no photo needed.
+ */
+.hero.color-scheme-6 .hero__media,
+.hero.color-scheme-6 [data-testid^="hero-picture"],
+.hero.color-scheme-6 [data-testid^="hero-video"],
+.hero.color-scheme-6 .hero__blurred-image {
+  display: none !important;
+}
+
 /* Keep content above the stripe pseudo-element */
 .hero.color-scheme-6 .hero__container {
   position: relative;
