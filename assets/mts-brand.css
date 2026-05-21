@@ -1,54 +1,296 @@
 /*
  * Meet the Seeds — Supplementary brand styles
+ * Brand: Royal blue #1d3686 · Light blue #e1edf5 · White #ffffff
+ * Fonts: Abril Fatface (headings) · Akshar (subheadings) · Assistant (body)
  * Loaded after base.css via stylesheets.liquid.
- * CSS custom properties are overridden in snippets/mts-brand-overrides.liquid.
+ * CSS custom properties live in snippets/mts-brand-overrides.liquid.
  */
 
-/* ── Focus ring ──────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   GLOBAL RESETS & TOKENS
+   ══════════════════════════════════════════════════════════════════════ */
+
 :focus-visible {
   outline: 2px solid #1d3686;
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
-/* ── Selection highlight ─────────────────────────────────────────────────── */
 ::selection {
-  background-color: #1d368620;
+  background-color: #1d368625;
   color: #1d3686;
 }
 
-/* ── Subheading / label uppercase accent ─────────────────────────────────── */
-h5,
-h6,
-.h5,
-.h6 {
+/* ═══════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY POLISH
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Abril Fatface has built-in weight — strip inherited bold from h1/h2 */
+h1, h2, .h1, .h2 {
+  font-weight: 400; /* Abril Fatface has its own visual weight */
+}
+
+/* Akshar for labels, sub-caps, eyebrow text */
+h5, h6, .h5, .h6,
+.caption,
+.overline {
+  font-family: 'Akshar', Arial, sans-serif;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-/* ── Announcement bar ────────────────────────────────────────────────────── */
+/* Button labels: Akshar uppercase */
+.button,
+.button-primary,
+.button-secondary,
+button[type="submit"],
+.shopify-payment-button__button {
+  font-family: 'Akshar', Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ANNOUNCEMENT BAR
+   ══════════════════════════════════════════════════════════════════════ */
+
 .announcement-bar {
   background-color: #1d3686;
   color: #ffffff;
 }
 
-/* ── Header logo height override (logo image is tall) ───────────────────── */
-.header__heading-logo {
-  max-height: 48px;
+.announcement-bar a {
+  color: #e1edf5;
 }
 
-/* ── Product badges — brand colours ─────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Logo — give it a little breathing room */
+.header__heading-logo {
+  max-height: 52px;
+  width: auto;
+}
+
+/* Transparent header: ensure nav links are readable on brand hero images */
+.header--transparent .header__heading-link,
+.header--transparent .header__menu-item {
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRODUCT CARDS
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Brand product photos are portrait — enforce consistent ratio */
+.card-gallery__media,
+.product-card__media,
+.collection-card__media {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+/* Smooth scale-up on hover */
+.card-gallery__media img,
+.product-card__media img {
+  transition: transform 0.4s ease-out;
+}
+
+.product-card:hover .card-gallery__media img,
+.product-card:hover .product-card__media img {
+  transform: scale(1.04);
+}
+
+/* Product title */
+.product-card__title,
+.product-card__name {
+  font-family: 'Abril Fatface', Georgia, serif;
+  font-weight: 400;
+  color: #1d3686;
+}
+
+/* Price — Assistant, semi-bold */
+.price,
+.price__regular,
+.price__sale {
+  font-family: 'Assistant', 'Helvetica Neue', sans-serif;
+  font-weight: 600;
+  color: #1d3686;
+}
+
+/* Sale price accent */
+.price--on-sale .price__sale {
+  color: #c0392b;
+}
+
+/* Product badge */
 .badge--sale {
   background-color: #1d3686 !important;
   color: #ffffff !important;
+  font-family: 'Akshar', Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-/* ── Cart bubble ─────────────────────────────────────────────────────────── */
+/* Sold-out badge */
+.badge--sold-out {
+  background-color: #8a9abc !important;
+  color: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CART BUBBLE
+   ══════════════════════════════════════════════════════════════════════ */
+
 .cart-count-bubble {
+  background-color: #1d3686;
+  color: #ffffff;
+  font-family: 'Akshar', Arial, sans-serif;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CART DRAWER
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Drawer header band */
+cart-drawer .cart-drawer__header,
+.cart-drawer__header {
   background-color: #1d3686;
   color: #ffffff;
 }
 
-/* ── Scrollbar (Chromium) ────────────────────────────────────────────────── */
+cart-drawer .cart-drawer__header h2,
+.cart-drawer__header h2,
+cart-drawer .cart-drawer__header .cart-drawer__title,
+.cart-drawer__header .cart-drawer__title {
+  color: #ffffff;
+  font-family: 'Abril Fatface', Georgia, serif;
+  font-weight: 400;
+}
+
+/* Close button in drawer */
+cart-drawer .cart-drawer__close,
+.cart-drawer__close {
+  color: #ffffff;
+}
+
+/* Cart item titles */
+.cart-item__name,
+.cart-items .cart-item__description {
+  font-family: 'Abril Fatface', Georgia, serif;
+  font-weight: 400;
+  color: #1d3686;
+}
+
+/* Cart subtotal */
+.cart-subtotal__title,
+.cart-subtotal__price {
+  font-family: 'Akshar', Arial, sans-serif;
+  font-weight: 600;
+  color: #1d3686;
+}
+
+/* Checkout button inside cart */
+.cart__ctas .button,
+.cart__ctas button[name="checkout"] {
+  background-color: #1d3686;
+  border-color: #1d3686;
+  color: #ffffff;
+}
+
+.cart__ctas .button:hover,
+.cart__ctas button[name="checkout"]:hover {
+  background-color: #152a6e;
+  border-color: #152a6e;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Footer sits on scheme-2 (light blue) — refine social icon colour */
+.footer .social-links__link svg {
+  fill: #1d3686;
+  transition: fill 0.2s ease;
+}
+
+.footer .social-links__link:hover svg {
+  fill: #152a6e;
+}
+
+/* Footer headings */
+.footer h2,
+.footer h3,
+.footer h4 {
+  font-family: 'Abril Fatface', Georgia, serif;
+  color: #1d3686;
+}
+
+/* Footer links */
+.footer a {
+  color: #1d3686;
+}
+.footer a:hover {
+  color: #152a6e;
+}
+
+/* Email signup input in footer */
+.email-signup input[type="email"] {
+  border-color: #1d368640;
+  background: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   404 PAGE
+   ══════════════════════════════════════════════════════════════════════ */
+
+.main-404 {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #e1edf5;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.main-404 h1 {
+  color: #1d3686;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PASSWORD PAGE
+   ══════════════════════════════════════════════════════════════════════ */
+
+.password-page {
+  background-color: #1d3686;
+  color: #ffffff;
+  min-height: 100svh;
+}
+
+.password-page h1,
+.password-page h2,
+.password-page h3 {
+  color: #ffffff;
+}
+
+.password-page .password__form input[type="password"] {
+  border-color: #ffffff60;
+  background: #ffffff15;
+  color: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SCROLLBAR (Chromium)
+   ══════════════════════════════════════════════════════════════════════ */
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -57,7 +299,7 @@ h6,
   background: #e1edf5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1d368660;
+  background: #1d368650;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {

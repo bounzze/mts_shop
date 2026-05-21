@@ -6,7 +6,7 @@
 {% style %}
   :root {
     /* ── Brand font families ─────────────────────────────────────────── */
-    --font-body--family:       'Assistant', Helvetica Neue, sans-serif;
+    --font-body--family:       'Assistant', 'Helvetica Neue', sans-serif;
     --font-body--weight:       400;
     --font-body--style:        normal;
 
@@ -22,15 +22,38 @@
     --font-accent--weight:     400;
     --font-accent--style:      normal;
 
-    /* ── Brand letter spacing ────────────────────────────────────────── */
+    /* ── Abril Fatface display/heading letter spacing ────────────────── */
+    /* Abril Fatface is naturally wide; pull it back a touch at display */
+    --letter-spacing--display-tight:  -0.02em;
+    --letter-spacing--display-normal: -0.01em;
+    --letter-spacing--display-loose:   0.01em;
+    --letter-spacing--heading-tight:  -0.01em;
     --letter-spacing--heading-normal:  0em;
-    --letter-spacing--display-normal:  -0.01em;
+    --letter-spacing--heading-loose:   0.02em;
 
-    /* ── Button border radius — slightly rounded, clean look ─────────── */
+    /* Akshar used for labels/subheadings — slight tracking looks great */
+    --letter-spacing--body-normal:     0em;
+    --letter-spacing--body-loose:      0.02em;
+
+    /* ── Line heights tuned for Abril Fatface ────────────────────────── */
+    /* Tighter for large display headings, looser for body text */
+    --line-height--display-tight:  1.05;
+    --line-height--display-normal: 1.1;
+    --line-height--display-loose:  1.2;
+    --line-height--heading-tight:  1.15;
+    --line-height--heading-normal: 1.25;
+    --line-height--body-normal:    1.6;
+    --line-height--body-loose:     1.75;
+
+    /* ── Button styles ───────────────────────────────────────────────── */
     --style-border-radius-buttons-primary:   8px;
     --style-border-radius-buttons-secondary: 8px;
+    --button-font-weight: 600;
 
-    /* ── Badge border radius ─────────────────────────────────────────── */
+    /* ── Badge ───────────────────────────────────────────────────────── */
     --style-border-radius-badge: 4px;
+
+    /* ── Card radius ─────────────────────────────────────────────────── */
+    --style-border-radius-cards: 8px;
   }
 {% endstyle %}

@@ -5,7 +5,7 @@
     "email_signup": {
       "label": "E-mail",
       "placeholder": "E-mailadres",
-      "success": "Bedankt dat je abonnee bent geworden!"
+      "success": "Goed zaad! Je bent aangemeld en hoort als eerste van nieuws bij Meet the Seeds."
     },
     "filter": "Filter",
     "payment_methods": "Betaalmethoden",
@@ -82,7 +82,7 @@
     "view_in_your_space": "In ruimte bekijken",
     "show_filters": "Filter",
     "clear": "Wissen",
-    "continue_shopping": "Doorgaan met winkelen",
+    "continue_shopping": "Verder ontdekken",
     "log_in_html": "Heb je een account? <a href=\"{{ link }}\">Log in</a> om sneller af te rekenen.",
     "see_items": {
       "one": "{{ count }} artikel weergeven",
@@ -123,7 +123,7 @@
     "language": "Taal",
     "localization_region_and_language": "Regio en taal",
     "cart_total": "Totaal van de winkelwagen",
-    "your_cart_is_empty": "Je winkelwagen is leeg",
+    "your_cart_is_empty": "Je mandje is nog leeg — ontdek onze zaadproducten!",
     "product_image": "Productafbeelding",
     "product_information": "Productinformatie",
     "quantity": "Aantal",

@@ -15,7 +15,7 @@
           "type": "text",
           "name": "t:names.text",
           "settings": {
-            "text": "<h1>Page not found</h1>",
+            "text": "<h1>Lost in the seed field?</h1>",
             "width": "100%",
             "max_width": "normal",
             "alignment": "center",
@@ -41,7 +41,7 @@
           "type": "text",
           "name": "t:names.text",
           "settings": {
-            "text": "<p>The link may be incorrect, or the page has been removed. </p>",
+            "text": "<p>This page doesn&#39;t exist — but our crispy seed products do. Head back and discover them.</p>",
             "width": "100%",
             "max_width": "normal",
             "alignment": "center",
@@ -67,7 +67,7 @@
           "type": "button",
           "name": "t:names.button",
           "settings": {
-            "label": "Continue shopping",
+            "label": "Back to our products",
             "link": "shopify://collections/all",
             "open_in_new_tab": false,
             "style_class": "button",

@@ -56,7 +56,7 @@
             "text_LWt8Pz": {
               "type": "text",
               "settings": {
-                "text": "<h2>Join our email list</h2>",
+                "text": "<h2>Stay seeded</h2>",
                 "width": "100%",
                 "max_width": "normal",
                 "alignment": "left",
@@ -81,7 +81,7 @@
             "text_f9CFLH": {
               "type": "text",
               "settings": {
-                "text": "<p>Get exclusive deals and early access to new products.</p>",
+                "text": "<p>Be the first to hear about new products, crispy recipes and seeds news from Meet the Seeds.</p>",
                 "width": "100%",
                 "max_width": "normal",
                 "alignment": "left",
@@ -143,9 +143,9 @@
       "settings": {
         "section_width": "page-width",
         "gap": 20,
-        "color_scheme": "scheme-1",
-        "padding-block-start": 30,
-        "padding-block-end": 30
+        "color_scheme": "scheme-2",
+        "padding-block-start": 48,
+        "padding-block-end": 48
       }
     },
     "footer_utilities_jLGE8U": {
@@ -171,13 +171,13 @@
         "social_links_Ew63Kq": {
           "type": "social-links",
           "settings": {
-            "facebook_url": "https://www.facebook.com/",
-            "instagram_url": "https://www.instagram.com/",
-            "youtube_url": "https://www.youtube.com/",
-            "tiktok_url": "https://www.tiktok.com/",
-            "twitter_url": "https://x.com/",
+            "facebook_url": "",
+            "instagram_url": "https://www.instagram.com/meettheseeds/",
+            "youtube_url": "",
+            "tiktok_url": "",
+            "twitter_url": "",
             "threads_url": "",
-            "linkedin_url": "",
+            "linkedin_url": "https://www.linkedin.com/company/meet-the-seeds/",
             "bluesky_url": "",
             "snapchat_url": "",
             "pinterest_url": "",

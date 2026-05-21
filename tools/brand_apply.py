@@ -601,9 +601,11 @@ def main() -> None:
         print("  Next steps:")
         print("  • Push changes to Shopify with the Shopify CLI:")
         print("    shopify theme push")
-        print("  • In the Shopify theme editor, set the logo image to")
-        print("    assets/mts_images/Logo Meet the Seeds.png")
+        print("  • In the Shopify theme editor, set the logo image.")
+        print("    Upload the logo via Shopify Admin > Content > Files first.")
+        print("  • Set the homepage hero background image via the theme editor.")
         print("  • Verify colour schemes look correct in the theme editor.")
+        print("  • Set store locale to NL to activate Dutch strings.")
     print("=" * 60)
 
 
