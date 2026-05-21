@@ -1,0 +1,30 @@
+{%- comment -%}
+  Meet the Seeds — Custom brand font-face declarations.
+  Font TTF files must be present in the theme's /assets/ directory.
+  Run tools/brand_apply.py to copy them from assets/mts_fonts/.
+{%- endcomment -%}
+<style>
+  @font-face {
+    font-family: 'Abril Fatface';
+    src: url('{{ 'AbrilFatface-Regular.ttf' | asset_url }}') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Akshar';
+    src: url('{{ 'Akshar-VariableFont_wght.ttf' | asset_url }}') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Assistant';
+    src: url('{{ 'Assistant-VariableFont_wght.ttf' | asset_url }}') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+</style>

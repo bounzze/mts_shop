@@ -1,0 +1,36 @@
+{%- comment -%}
+  Meet the Seeds — CSS variable overrides.
+  Rendered AFTER theme-styles-variables and color-schemes so our brand
+  values win in the cascade for :root custom properties.
+{%- endcomment -%}
+{% style %}
+  :root {
+    /* ── Brand font families ─────────────────────────────────────────── */
+    --font-body--family:       'Assistant', Helvetica Neue, sans-serif;
+    --font-body--weight:       400;
+    --font-body--style:        normal;
+
+    --font-subheading--family: 'Akshar', Arial, sans-serif;
+    --font-subheading--weight: 600;
+    --font-subheading--style:  normal;
+
+    --font-heading--family:    'Abril Fatface', Georgia, serif;
+    --font-heading--weight:    400;
+    --font-heading--style:     normal;
+
+    --font-accent--family:     'Abril Fatface', Georgia, serif;
+    --font-accent--weight:     400;
+    --font-accent--style:      normal;
+
+    /* ── Brand letter spacing ────────────────────────────────────────── */
+    --letter-spacing--heading-normal:  0em;
+    --letter-spacing--display-normal:  -0.01em;
+
+    /* ── Button border radius — slightly rounded, clean look ─────────── */
+    --style-border-radius-buttons-primary:   8px;
+    --style-border-radius-buttons-secondary: 8px;
+
+    /* ── Badge border radius ─────────────────────────────────────────── */
+    --style-border-radius-badge: 4px;
+  }
+{% endstyle %}

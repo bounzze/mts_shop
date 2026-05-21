@@ -1,0 +1,65 @@
+/*
+ * Meet the Seeds — Supplementary brand styles
+ * Loaded after base.css via stylesheets.liquid.
+ * CSS custom properties are overridden in snippets/mts-brand-overrides.liquid.
+ */
+
+/* ── Focus ring ──────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #1d3686;
+  outline-offset: 2px;
+}
+
+/* ── Selection highlight ─────────────────────────────────────────────────── */
+::selection {
+  background-color: #1d368620;
+  color: #1d3686;
+}
+
+/* ── Subheading / label uppercase accent ─────────────────────────────────── */
+h5,
+h6,
+.h5,
+.h6 {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Announcement bar ────────────────────────────────────────────────────── */
+.announcement-bar {
+  background-color: #1d3686;
+  color: #ffffff;
+}
+
+/* ── Header logo height override (logo image is tall) ───────────────────── */
+.header__heading-logo {
+  max-height: 48px;
+}
+
+/* ── Product badges — brand colours ─────────────────────────────────────── */
+.badge--sale {
+  background-color: #1d3686 !important;
+  color: #ffffff !important;
+}
+
+/* ── Cart bubble ─────────────────────────────────────────────────────────── */
+.cart-count-bubble {
+  background-color: #1d3686;
+  color: #ffffff;
+}
+
+/* ── Scrollbar (Chromium) ────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #e1edf5;
+}
+::-webkit-scrollbar-thumb {
+  background: #1d368660;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #1d3686;
+}

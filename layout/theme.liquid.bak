@@ -31,8 +31,6 @@
     {%- render 'scripts' -%}
     {%- render 'theme-styles-variables' -%}
     {%- render 'color-schemes' -%}
-    {%- render 'mts-brand-fonts' -%}
-    {%- render 'mts-brand-overrides' -%}
 
     {% if request.design_mode %}
       {%- render 'theme-editor' -%}
