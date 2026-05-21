@@ -247,8 +247,79 @@ cart-drawer .cart-drawer__close,
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   404 PAGE
+   HOMEPAGE HERO — Yellow stripe (matches meettheseeds.com)
    ══════════════════════════════════════════════════════════════════════ */
+
+/*
+ * The hero section uses color-scheme-6 (now #FFE000 yellow).
+ * We overlay a diagonal stripe pattern via a pseudo-element so the
+ * solid yellow base is preserved for any text legibility fallback.
+ */
+.hero.color-scheme-6 {
+  position: relative;
+  overflow: hidden;
+  /* Fallback solid yellow */
+  background-color: #FFE000;
+}
+
+/* Diagonal stripes: yellow + white at 45°, matching the brand website */
+.hero.color-scheme-6::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #FFE000 0px,
+    #FFE000 32px,
+    #ffffff 32px,
+    #ffffff 60px
+  );
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Keep content above the stripe pseudo-element */
+.hero.color-scheme-6 .hero__container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero heading: large, bold, left-aligned brand blue */
+.hero.color-scheme-6 h1,
+.hero.color-scheme-6 .hero__heading {
+  color: #1d3686;
+  font-family: 'Abril Fatface', Georgia, serif;
+  font-weight: 400;
+  text-shadow: none;
+}
+
+/* Secondary/CTA button on yellow: outlined blue */
+.hero.color-scheme-6 .button-secondary {
+  border-color: #1d3686;
+  color: #1d3686;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.hero.color-scheme-6 .button-secondary:hover {
+  background: #1d3686;
+  color: #ffffff;
+}
+
+/* Primary button: solid blue */
+.hero.color-scheme-6 .button-primary {
+  background: #1d3686;
+  border-color: #1d3686;
+  color: #ffffff;
+}
+
+.hero.color-scheme-6 .button-primary:hover {
+  background: #152a6e;
+  border-color: #152a6e;
+}
+
+
 
 .main-404 {
   min-height: 60vh;
