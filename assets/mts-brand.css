@@ -389,6 +389,20 @@ cart-drawer .cart-drawer__close,
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   HOMEPAGE: COMPACT HEADER
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Reduce nav-bar height to roughly half on the homepage */
+.template-index .header {
+  --header-padding: 4px;
+}
+
+.template-index .header-logo__image {
+  height: 26px !important;
+  width: auto !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    HEADER LANGUAGE SELECTOR (in actions bar)
    ══════════════════════════════════════════════════════════════════════ */
 
