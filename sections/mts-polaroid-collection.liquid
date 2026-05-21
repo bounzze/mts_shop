@@ -406,26 +406,29 @@
   function rand(min, max) { return min + Math.random() * (max - min); }
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-  /* --- ZOOM --- */
-  document.getElementById('seeds-overlay').addEventListener('click', closeSeedsZoom);
+  /* --- ZOOM (function declarations are hoisted — safe to reference before definition) --- */
+  function closeSeedsZoom() {
+    document.querySelectorAll('.seeds-card').forEach(function (c) { c.classList.remove('zoomed'); });
+    var ov = document.getElementById('seeds-overlay');
+    if (ov) ov.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function zoomSeedsCard(el) {
+    if (el.classList.contains('zoomed')) { closeSeedsZoom(); return; }
+    document.querySelectorAll('.seeds-card').forEach(function (c) { c.classList.remove('zoomed'); });
+    el.classList.add('zoomed');
+    var ov = document.getElementById('seeds-overlay');
+    if (ov) ov.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+
+  var seedsOverlay = document.getElementById('seeds-overlay');
+  if (seedsOverlay) seedsOverlay.addEventListener('click', closeSeedsZoom);
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeSeedsZoom();
   });
-
-  window.zoomSeedsCard = function (el) {
-    if (el.classList.contains('zoomed')) { closeSeedsZoom(); return; }
-    document.querySelectorAll('.seeds-card').forEach(function (c) { c.classList.remove('zoomed'); });
-    el.classList.add('zoomed');
-    document.getElementById('seeds-overlay').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-  };
-
-  window.closeSeedsZoom = function () {
-    document.querySelectorAll('.seeds-card').forEach(function (c) { c.classList.remove('zoomed'); });
-    document.getElementById('seeds-overlay').style.display = 'none';
-    document.body.style.overflow = '';
-  };
 
   /* --- ADD TO CART (AJAX) --- */
   document.addEventListener('submit', function (e) {
