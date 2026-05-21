@@ -262,6 +262,18 @@ cart-drawer .cart-drawer__close,
   background-color: #FFE000;
 }
 
+/* Diagonal stripes: yellow + white at 45° — hero AND all scheme-6 sections */
+/* Applied via ::before on hero, and via background-image on section-background divs */
+.section-background.color-scheme-6 {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0px,
+    transparent 32px,
+    rgba(255, 255, 255, 0.35) 32px,
+    rgba(255, 255, 255, 0.35) 60px
+  );
+}
+
 /* Diagonal stripes: yellow + white at 45°, matching the brand website */
 .hero.color-scheme-6::before {
   content: '';
