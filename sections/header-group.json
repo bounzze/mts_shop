@@ -11,36 +11,6 @@
   "type": "header",
   "name": "Header",
   "sections": {
-    "header_announcements_9jGBFp": {
-      "type": "header-announcements",
-      "blocks": {
-        "announcement_BxgCk9": {
-          "type": "_announcement",
-          "settings": {
-            "text": "Crispy creations powered by super seeds",
-            "link": "",
-            "font": "var(--font-subheading--family)",
-            "font_size": "0.75rem",
-            "weight": "600",
-            "letter_spacing": "0.08em",
-            "case": "uppercase"
-          },
-          "blocks": {}
-        }
-      },
-      "block_order": [
-        "announcement_BxgCk9"
-      ],
-      "name": "t:names.announcement_bar",
-      "settings": {
-        "speed": 5,
-        "section_width": "page-width",
-        "color_scheme": "scheme-4",
-        "divider_width": 0,
-        "padding-block-start": 10,
-        "padding-block-end": 10
-      }
-    },
     "header_section": {
       "type": "header",
       "blocks": {
@@ -110,7 +80,6 @@
     }
   },
   "order": [
-    "header_announcements_9jGBFp",
     "header_section"
   ]
 }
