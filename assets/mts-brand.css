@@ -387,3 +387,67 @@ cart-drawer .cart-drawer__close,
 ::-webkit-scrollbar-thumb:hover {
   background: #1d3686;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER LANGUAGE SELECTOR (in actions bar)
+   ══════════════════════════════════════════════════════════════════════ */
+
+.mts-lang-selector-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.mts-lang-selector-wrapper localization-form-component {
+  width: auto;
+}
+
+.mts-lang-selector-wrapper .localization-form {
+  width: auto;
+}
+
+.mts-lang-selector-wrapper .language-selector {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* hide the "Language" heading label */
+.mts-lang-selector-wrapper .language-selector__label {
+  display: none;
+}
+
+.mts-lang-selector-wrapper .localization-form__select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 1.5px solid currentColor;
+  border-radius: 4px;
+  color: currentColor;
+  cursor: pointer;
+  font-family: var(--font-body--family);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 3px 22px 3px 8px;
+  line-height: 1.4;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.mts-lang-selector-wrapper .localization-form__select:hover,
+.mts-lang-selector-wrapper .localization-form__select:focus {
+  opacity: 1;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* caret icon sits inside the select's right padding */
+.mts-lang-selector-wrapper .icon-caret {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  width: 12px;
+  height: 12px;
+}
