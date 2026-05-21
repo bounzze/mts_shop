@@ -1,0 +1,618 @@
+{%- comment -%}
+  Section: mts-polaroid-collection
+  Renders collection products as a polaroid-style photo collage.
+  Cards are server-rendered; JS applies random rotations, tape, stains and note styling.
+{%- endcomment -%}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Kalam:wght@400;700&family=Patrick+Hand&family=Indie+Flower&family=Architects+Daughter&family=Permanent+Marker&family=Covered+By+Your+Grace&family=Gochi+Hand&family=Zeyada&display=swap">
+
+{% style %}
+  /* ---- POLAROID COLLAGE SECTION ---- */
+  .seeds-collage-section {
+    padding-block-start: var(--seeds-pt, 32px);
+    padding-block-end: var(--seeds-pb, 32px);
+  }
+
+  .seeds-collage-wrapper {
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    background: transparent;
+  }
+
+  .seeds-masonry {
+    column-count: 3;
+    column-gap: 40px;
+  }
+
+  @media (max-width: 900px) {
+    .seeds-masonry { column-count: 2; }
+  }
+
+  @media (max-width: 600px) {
+    .seeds-masonry { column-count: 1; }
+  }
+
+  /* --- POLAROID CARD --- */
+  .seeds-card {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 60px;
+    background: #fdfdfd;
+    padding: 15px 15px 65px 15px;
+    box-shadow:
+      0 1px 3px rgba(0,0,0,0.10),
+      0 10px 25px rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition:
+      transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1),
+      box-shadow 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: 1px solid rgba(0,0,0,0.05);
+    break-inside: avoid;
+    position: relative;
+    z-index: 1;
+    visibility: hidden;
+    opacity: 0;
+    overflow: visible;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,0,0,0.018) 28px, rgba(0,0,0,0.018) 29px),
+      repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(0,0,0,0.012) 28px, rgba(0,0,0,0.012) 29px);
+  }
+
+  .seeds-card.seeds-visible {
+    animation: scatterIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  @keyframes scatterIn {
+    0% {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(var(--scatter-x, 0px)) translateY(var(--scatter-y, 50px)) rotate(var(--scatter-rot, 15deg)) scale(0.8);
+    }
+    100% {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  .seeds-card img {
+    width: 100%;
+    display: block;
+    filter: contrast(1.05) saturate(1.1);
+    border: 1px solid rgba(0,0,0,0.1);
+    transition: filter 0.4s ease;
+  }
+
+  /* Paper noise overlay */
+  .seeds-card::before {
+    content: "";
+    position: absolute;
+    top: 15px; left: 15px; right: 15px; bottom: 65px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.15;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+    transition: opacity 0.4s ease;
+  }
+
+  /* --- HANDWRITTEN NOTE (product name) --- */
+  .seeds-note {
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    line-height: 1.1;
+    pointer-events: none;
+    user-select: none;
+    padding: 0 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: filter 0.4s ease, opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  /* --- WASHI TAPE --- */
+  .washi-tape {
+    position: absolute;
+    width: 80px;
+    height: 30px;
+    backdrop-filter: blur(1px);
+    z-index: 5;
+    pointer-events: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* --- COFFEE STAIN --- */
+  .coffee-stain {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M100 20C55.8 20 20 55.8 20 100s35.8 80 80 80 80-35.8 80-80S144.2 20 100 20zm0 150c-38.6 0-70-31.4-70-70s31.4-70 70-70 70 31.4 70 70-31.4 70-70 70z' fill='%236F4E37' fill-opacity='0.1'/%3E%3Cpath d='M100 40c-33.1 0-60 26.9-60 60s26.9 60 60 60 60-26.9 60-60-26.9-60-60-60zm0 110c-27.6 0-50-22.4-50-50s22.4-50 50-50 50 22.4 50 50-22.4 50-50 50z' fill='%236F4E37' fill-opacity='0.05'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  /* --- ARROW DECO --- */
+  .seeds-deco {
+    position: absolute;
+    bottom: 12px;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.75;
+  }
+
+  /* --- HOVER --- */
+  .seeds-card:hover {
+    transform: translateY(-15px) rotate(0deg) scale(1.05) !important;
+    z-index: 50 !important;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+  }
+
+  /* --- OVERLAY --- */
+  #seeds-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 9998;
+    display: none;
+    cursor: pointer;
+  }
+
+  /* --- ZOOMED STATE --- */
+  .seeds-card.zoomed {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) rotate(0deg) !important;
+    width: 95vw;
+    max-width: 560px;
+    z-index: 99999 !important;
+    padding: 12px !important;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.4);
+    background: #fff;
+    visibility: visible !important;
+    opacity: 1 !important;
+    animation: zoomIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  }
+
+  .seeds-card.zoomed .seeds-note {
+    filter: blur(12px);
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  .seeds-card.zoomed img {
+    filter: none !important;
+    border: none;
+  }
+
+  .seeds-card.zoomed::before { opacity: 0; }
+
+  .seeds-card.zoomed .washi-tape,
+  .seeds-card.zoomed .coffee-stain {
+    opacity: 0 !important;
+    visibility: hidden;
+  }
+
+  @keyframes zoomIn {
+    from { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
+    to   { transform: translate(-50%, -50%) scale(1);    opacity: 1; }
+  }
+
+  /* --- ZOOM PANEL (shown when zoomed) --- */
+  .seeds-zoom-panel {
+    display: none;
+    padding: 14px 4px 4px;
+  }
+
+  .seeds-card.zoomed .seeds-zoom-panel {
+    display: block;
+  }
+
+  .seeds-zoom-title {
+    font-family: 'Abril Fatface', var(--font-heading--family, serif);
+    font-size: 1.25rem;
+    color: #1d3686;
+    margin: 0 0 4px;
+    text-align: center;
+  }
+
+  .seeds-zoom-price {
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 1rem;
+    color: #1d3686;
+    opacity: 0.7;
+    margin: 0 0 14px;
+    text-align: center;
+  }
+
+  .seeds-zoom-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .seeds-add-btn {
+    display: inline-block;
+    background: #1d3686;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+    line-height: 1.4;
+  }
+
+  .seeds-add-btn:hover { background: #152a6e; color: #fff; }
+  .seeds-add-btn--sold-out { opacity: 0.45; cursor: default; background: #999; }
+
+  .seeds-view-btn {
+    display: inline-block;
+    background: transparent;
+    border: 1.5px solid #1d3686;
+    color: #1d3686;
+    padding: 10px 22px;
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 0.875rem;
+    cursor: pointer;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+    line-height: 1.4;
+  }
+
+  .seeds-view-btn:hover { background: #1d3686; color: #fff; }
+
+  /* --- PAGINATION --- */
+  .seeds-pagination {
+    break-inside: avoid;
+    text-align: center;
+    padding: 20px 0 40px;
+    width: 100%;
+    display: block;
+  }
+{% endstyle %}
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+
+<div
+  class="seeds-collage-section color-{{ section.settings.color_scheme }}"
+  style="--seeds-pt: {{ section.settings['padding-block-start'] }}px; --seeds-pb: {{ section.settings['padding-block-end'] }}px;"
+>
+  <div id="seeds-overlay"></div>
+
+  <div class="seeds-collage-wrapper">
+    <div class="seeds-masonry" id="seedsMasonry">
+
+      {%- paginate collection.products by section.settings.products_per_page -%}
+
+        {%- for product in collection.products -%}
+          {%- assign variant = product.selected_or_first_available_variant -%}
+
+          <div
+            class="seeds-card"
+            data-product-url="{{ product.url }}"
+            data-variant-id="{{ variant.id }}"
+            data-available="{{ variant.available }}"
+            data-single-variant="{{ product.has_only_default_variant }}"
+          >
+            {%- if product.featured_image -%}
+              {%- assign img_height = 600 | divided_by: product.featured_image.aspect_ratio | round -%}
+              <img
+                src="{{ product.featured_image | image_url: width: 600 }}"
+                alt="{{ product.featured_image.alt | default: product.title | escape }}"
+                loading="lazy"
+                width="600"
+                height="{{ img_height }}"
+              >
+            {%- endif -%}
+
+            <div class="seeds-note">{{ product.title }}</div>
+
+            <div class="seeds-zoom-panel">
+              <p class="seeds-zoom-title">{{ product.title }}</p>
+              <p class="seeds-zoom-price">{{ product.price | money }}</p>
+              <div class="seeds-zoom-actions">
+                {%- if product.has_only_default_variant and variant.available -%}
+                  <form class="seeds-atc-form" method="post" action="/cart/add">
+                    <input type="hidden" name="id" value="{{ variant.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="seeds-add-btn">Add to cart</button>
+                  </form>
+                {%- elsif variant.available -%}
+                  <a href="{{ product.url }}" class="seeds-add-btn">Select options</a>
+                {%- else -%}
+                  <span class="seeds-add-btn seeds-add-btn--sold-out">Sold out</span>
+                {%- endif -%}
+                <a href="{{ product.url }}" class="seeds-view-btn">View product &rarr;</a>
+              </div>
+            </div>
+          </div>
+
+        {%- endfor -%}
+
+        {%- if paginate.pages > 1 -%}
+          <div class="seeds-pagination">
+            {{ paginate | default_pagination }}
+          </div>
+        {%- endif -%}
+
+      {%- endpaginate -%}
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* --- DATA --- */
+  var inkColors = [
+    'rgb(0, 27, 117)',
+    'rgb(0, 27, 117)',
+    'rgb(0, 27, 117)',
+    'rgb(0, 27, 117)',
+    'rgba(51, 114, 185, 1)',
+    'rgba(51, 114, 185, 1)',
+    'rgba(132, 132, 189, 1)',
+    'rgba(244, 217, 64, 1)',
+    'rgba(242, 144, 45, 1)'
+  ];
+
+  var tapeColors = [
+    'rgba(0, 27, 117, 0.35)',
+    'rgba(244, 217, 64, 0.55)',
+    'rgba(51, 114, 185, 0.40)',
+    'rgba(132, 132, 189, 0.45)',
+    'rgba(242, 144, 45, 0.40)'
+  ];
+
+  var handwritingFonts = [
+    "'Caveat', cursive",
+    "'Kalam', cursive",
+    "'Patrick Hand', cursive",
+    "'Indie Flower', cursive",
+    "'Architects Daughter', cursive",
+    "'Permanent Marker', cursive",
+    "'Covered By Your Grace', cursive",
+    "'Gochi Hand', cursive",
+    "'Zeyada', cursive"
+  ];
+
+  var decorations = [
+    '<svg viewBox="0 0 50 50" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 40 C12 30 22 15 38 12"></path><path d="M32 10 C34 14 36 18 38 12 C34 13 30 12 28 10"></path></svg>',
+    '<svg viewBox="0 0 50 50" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M42 38 C36 28 20 16 8 14"></path><path d="M14 10 C12 14 10 18 8 14 C12 14 16 12 18 10"></path></svg>',
+    '<svg viewBox="0 0 50 30" width="44" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15 C14 12 28 12 42 14"></path><path d="M34 8 C37 11 40 14 42 14 C40 17 37 20 35 22"></path></svg>'
+  ];
+
+  function rand(min, max) { return min + Math.random() * (max - min); }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  /* --- ZOOM --- */
+  document.getElementById('seeds-overlay').addEventListener('click', closeSeedsZoom);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeSeedsZoom();
+  });
+
+  window.zoomSeedsCard = function (el) {
+    if (el.classList.contains('zoomed')) { closeSeedsZoom(); return; }
+    document.querySelectorAll('.seeds-card').forEach(function (c) { c.classList.remove('zoomed'); });
+    el.classList.add('zoomed');
+    document.getElementById('seeds-overlay').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeSeedsZoom = function () {
+    document.querySelectorAll('.seeds-card').forEach(function (c) { c.classList.remove('zoomed'); });
+    document.getElementById('seeds-overlay').style.display = 'none';
+    document.body.style.overflow = '';
+  };
+
+  /* --- ADD TO CART (AJAX) --- */
+  document.addEventListener('submit', function (e) {
+    if (!e.target.classList.contains('seeds-atc-form')) return;
+    e.preventDefault();
+    var btn = e.target.querySelector('.seeds-add-btn');
+    var orig = btn.textContent;
+    btn.textContent = 'Adding\u2026';
+    btn.disabled = true;
+    fetch('/cart/add.js', { method: 'POST', body: new FormData(e.target) })
+      .then(function () {
+        btn.textContent = '\u2713 Added!';
+        document.dispatchEvent(new CustomEvent('cart:refresh'));
+        setTimeout(function () {
+          closeSeedsZoom();
+          btn.textContent = orig;
+          btn.disabled = false;
+        }, 900);
+      })
+      .catch(function () {
+        btn.textContent = 'Error \u2014 retry';
+        btn.disabled = false;
+      });
+  });
+
+  /* --- COLLAGE INIT --- */
+  var container = document.getElementById('seedsMasonry');
+  if (!container) return;
+
+  var tapeChance       = 0.50;
+  var bottomTapeChance = 0.35;
+  var stainChance      = 0.15;
+  var decoChance       = 0.35;
+
+  var cards = container.querySelectorAll('.seeds-card');
+
+  cards.forEach(function (card, index) {
+    /* Random rotation / scale / spacing */
+    var rot   = rand(-5, 5).toFixed(1);
+    var scale = rand(0.94, 1.04).toFixed(2);
+    card.style.setProperty('--rot', rot + 'deg');
+    card.style.transform    = 'rotate(' + rot + 'deg) scale(' + scale + ')';
+    card.style.marginTop    = rand(-20, 10).toFixed(0) + 'px';
+    card.style.marginBottom = rand(-30, -10).toFixed(0) + 'px';
+    card.style.animationDelay = (index * 0.1) + 's';
+
+    /* Scatter-in CSS vars */
+    var d  = Math.random();
+    var sx = d < 0.33 ? rand(-100, -40) : d < 0.66 ? rand(40, 100) : rand(-20, 20);
+    var sy = d < 0.66 ? rand(20, 50) : rand(50, 80);
+    var sr = d < 0.33 ? rand(8, 20) : d < 0.66 ? rand(-20, -8) : rand(-15, 15);
+    card.style.setProperty('--scatter-x',   sx.toFixed(0) + 'px');
+    card.style.setProperty('--scatter-y',   sy.toFixed(0) + 'px');
+    card.style.setProperty('--scatter-rot', sr.toFixed(0) + 'deg');
+
+    /* Washi tape */
+    if (Math.random() < tapeChance) {
+      var tape = document.createElement('div');
+      tape.className = 'washi-tape';
+      tape.style.backgroundColor = pick(tapeColors);
+      tape.style.top       = rand(-10, 5) + 'px';
+      tape.style.left      = rand(20, 60) + '%';
+      tape.style.transform = 'rotate(' + rand(-10, 10) + 'deg)';
+      card.appendChild(tape);
+
+      if (Math.random() < bottomTapeChance) {
+        var tape2 = document.createElement('div');
+        tape2.className = 'washi-tape';
+        tape2.style.backgroundColor = pick(tapeColors);
+        tape2.style.bottom   = rand(-10, 5) + 'px';
+        tape2.style.top      = 'auto';
+        tape2.style.left     = rand(20, 60) + '%';
+        tape2.style.transform = 'rotate(' + rand(-10, 10) + 'deg)';
+        card.appendChild(tape2);
+      }
+    }
+
+    /* Coffee stain */
+    if (Math.random() < stainChance) {
+      var stain = document.createElement('div');
+      stain.className = 'coffee-stain';
+      stain.style.top       = rand(0, 80) + '%';
+      stain.style.left      = rand(-10, 70) + '%';
+      stain.style.transform = 'rotate(' + rand(0, 360) + 'deg) scale(' + rand(0.5, 1.5) + ')';
+      card.appendChild(stain);
+    }
+
+    /* Style the handwritten product-name note */
+    var noteEl = card.querySelector('.seeds-note');
+    if (noteEl) {
+      var ink  = pick(inkColors);
+      var font = pick(handwritingFonts);
+      noteEl.style.color      = ink;
+      noteEl.style.fontFamily = font;
+      noteEl.style.transform  = 'rotate(' + rand(-3, 3).toFixed(1) + 'deg)';
+
+      /* Arrow deco (skip heavy fonts) */
+      if (font.indexOf('Permanent Marker') === -1 && Math.random() < decoChance) {
+        var deco = document.createElement('div');
+        deco.className = 'seeds-deco';
+        deco.innerHTML = pick(decorations);
+        var side = Math.random() > 0.5 ? 'left' : 'right';
+        deco.style[side]   = rand(8, 24).toFixed(0) + 'px';
+        deco.style.bottom  = rand(6, 22).toFixed(0) + 'px';
+        deco.style.transform = 'rotate(' + rand(-15, 15).toFixed(1) + 'deg)';
+        deco.style.color   = ink;
+        card.appendChild(deco);
+      }
+    }
+
+    /* Click handler — zoom on card click, ignore zoom-panel clicks */
+    card.addEventListener('click', function (e) {
+      if (e.target.closest('.seeds-zoom-panel')) return;
+      zoomSeedsCard(card);
+    });
+  });
+
+  /* Scroll-triggered entrance animation */
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('seeds-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px 50px 0px', threshold: 0.05 });
+    cards.forEach(function (c) { observer.observe(c); });
+  }
+
+  /* Safety fallback — ensure all cards appear even if observer stalls */
+  setTimeout(function () {
+    cards.forEach(function (c) { c.classList.add('seeds-visible'); });
+  }, 3000);
+}());
+</script>
+
+{% schema %}
+{
+  "name": "Polaroid collection",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 12,
+      "label": "Products per page"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "options": [
+        { "value": "scheme-1", "label": "Scheme 1 — White" },
+        { "value": "scheme-2", "label": "Scheme 2 — Light blue" },
+        { "value": "scheme-3", "label": "Scheme 3 — Pale blue" },
+        { "value": "scheme-4", "label": "Scheme 4 — Brand blue" },
+        { "value": "scheme-5", "label": "Scheme 5 — Navy" },
+        { "value": "scheme-6", "label": "Scheme 6 — Yellow" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 32,
+      "unit": "px",
+      "label": "Padding top"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 32,
+      "unit": "px",
+      "label": "Padding bottom"
+    }
+  ],
+  "presets": [
+    { "name": "Polaroid collection" }
+  ]
+}
+{% endschema %}
