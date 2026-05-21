@@ -83,7 +83,7 @@
     "close": "Close",
     "open": "Open",
     // Continue shopping link on the cart page which takes the user back to a collection page
-    "continue_shopping": "Continue shopping",
+    "continue_shopping": "Keep exploring",
     "enter_password": "Enter password",
     "log_in_html": "Have an account? <a href=\"{{ link }}\">Log in</a> to check out faster.",
     "log_in": "Sign in",
@@ -125,13 +125,13 @@
       "email": "Email",
       "phone": "Phone",
       "comment": "Comment",
-      "post_success": "Thanks for contacting us. We'll get back to you as soon as possible.",
+      "post_success": "Thanks for reaching out! We'll get back to you as soon as possible — in the meantime, meet our seeds.",
       "error_heading": "Please adjust the following:"
     },
     "email_signup": {
       "label": "Email",
       "placeholder": "Email address",
-      "success": "Thanks for subscribing!"
+      "success": "Great seed! You're subscribed and will hear about new products, recipes and news from Meet the Seeds first."
     },
     "filter": "Filter",
     "load_video": "Load video: {{ description }}",
@@ -302,7 +302,7 @@
     "each_abbreviation": "ea",
     "price_at": "at",
     "price_range": "Price range",
-    "your_cart_is_empty": "Your cart is empty",
+    "your_cart_is_empty": "Your cart is empty — explore our crispy seed products!",
     "product_count": "Product count",
     "errors": "Errors",
     "wrong_password": "Wrong password",
