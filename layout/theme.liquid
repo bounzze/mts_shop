@@ -136,5 +136,36 @@
     {% if settings.quick_add or settings.mobile_quick_add %}
       {% render 'quick-add-modal' %}
     {% endif %}
+
+    {%- comment -%} Browser-language auto-detection: switches locale on first visit if a matching published language exists {%- endcomment -%}
+    {%- if localization.available_languages.size > 1 -%}
+      {%- form 'localization', id: 'mts-locale-detect-form', style: 'display:none' -%}
+        <input type="hidden" id="mts-locale-detect-input" name="locale_code" value="{{ localization.language.iso_code }}">
+        <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
+        <input type="hidden" name="return_to" value="{{ request.path }}">
+      {%- endform -%}
+      <script>
+        (function () {
+          // Run only once — after that, user's manual selection is respected
+          if (localStorage.getItem('mts_locale_detected')) return;
+          localStorage.setItem('mts_locale_detected', '1');
+
+          var available = {{ localization.available_languages | map: 'iso_code' | json }};
+          var current   = {{ localization.language.iso_code | json }};
+          var preferred = Array.prototype.slice.call(navigator.languages || [navigator.language || ''])
+            .map(function (l) { return l.split('-')[0].toLowerCase(); });
+
+          for (var i = 0; i < preferred.length; i++) {
+            for (var j = 0; j < available.length; j++) {
+              if (available[j].toLowerCase() === preferred[i] && available[j] !== current) {
+                document.getElementById('mts-locale-detect-input').value = available[j];
+                document.getElementById('mts-locale-detect-form').submit();
+                return;
+              }
+            }
+          }
+        })();
+      </script>
+    {%- endif -%}
   </body>
 </html>
