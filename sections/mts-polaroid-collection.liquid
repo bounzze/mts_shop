@@ -303,9 +303,17 @@
   <div class="seeds-collage-wrapper">
     <div class="seeds-masonry" id="seedsMasonry">
 
-      {%- paginate collection.products by section.settings.products_per_page -%}
+      {%- if section.settings.collection != blank -%}
+        {%- assign target_collection = section.settings.collection -%}
+      {%- elsif collection != blank -%}
+        {%- assign target_collection = collection -%}
+      {%- else -%}
+        {%- assign target_collection = collections['all'] -%}
+      {%- endif -%}
 
-        {%- for product in collection.products -%}
+      {%- paginate target_collection.products by section.settings.products_per_page -%}
+
+        {%- for product in target_collection.products -%}
           {%- assign variant = product.selected_or_first_available_variant -%}
 
           <div
@@ -406,28 +414,28 @@
   function rand(min, max) { return min + Math.random() * (max - min); }
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-  /* --- ZOOM (function declarations are hoisted — safe to reference before definition) --- */
-  function closeSeedsZoom() {
+  /* --- ZOOM --- define before any addEventListener calls --- */
+  window.closeSeedsZoom = function () {
     document.querySelectorAll('.seeds-card').forEach(function (c) { c.classList.remove('zoomed'); });
     var ov = document.getElementById('seeds-overlay');
     if (ov) ov.style.display = 'none';
     document.body.style.overflow = '';
-  }
+  };
 
-  function zoomSeedsCard(el) {
-    if (el.classList.contains('zoomed')) { closeSeedsZoom(); return; }
+  window.zoomSeedsCard = function (el) {
+    if (el.classList.contains('zoomed')) { window.closeSeedsZoom(); return; }
     document.querySelectorAll('.seeds-card').forEach(function (c) { c.classList.remove('zoomed'); });
     el.classList.add('zoomed');
     var ov = document.getElementById('seeds-overlay');
     if (ov) ov.style.display = 'block';
     document.body.style.overflow = 'hidden';
-  }
+  };
 
   var seedsOverlay = document.getElementById('seeds-overlay');
-  if (seedsOverlay) seedsOverlay.addEventListener('click', closeSeedsZoom);
+  if (seedsOverlay) seedsOverlay.addEventListener('click', window.closeSeedsZoom);
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeSeedsZoom();
+    if (e.key === 'Escape') window.closeSeedsZoom();
   });
 
   /* --- ADD TO CART (AJAX) --- */
@@ -443,7 +451,7 @@
         btn.textContent = '\u2713 Added!';
         document.dispatchEvent(new CustomEvent('cart:refresh'));
         setTimeout(function () {
-          closeSeedsZoom();
+          window.closeSeedsZoom();
           btn.textContent = orig;
           btn.disabled = false;
         }, 900);
@@ -570,6 +578,11 @@
 {
   "name": "Polaroid collection",
   "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
     {
       "type": "range",
       "id": "products_per_page",
