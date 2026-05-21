@@ -15,9 +15,9 @@
           "type": "_cart-title",
           "static": true,
           "settings": {
-            "title": "Cart",
+            "title": "Your cart",
             "show_count": true,
-            "type_preset": "h4",
+            "type_preset": "h2",
             "alignment": "left",
             "padding-block-start": 0,
             "padding-block-end": 0,
@@ -58,7 +58,7 @@
       },
       "settings": {
         "section_width": "page-width",
-        "color_scheme": "",
+        "color_scheme": "scheme-1",
         "padding-block-start": 24,
         "padding-block-end": 0
       }
