@@ -142,6 +142,7 @@
     "taxes_at_checkout_shipping_at_checkout_with_policy_html": "Belastingen, kortingen en <a href=\"{{ link }}\">verzending</a> worden bij de checkout berekend.",
     "taxes_at_checkout_shipping_at_checkout_without_policy": "Belastingen, kortingen en verzending worden bij de checkout berekend.",
     "checkout": "Afrekenen",
+    "min_qty_notice": "Voeg minimaal 3 producten, of een bundel, toe om verder te gaan.",
     "cart_title": "Winkelwagen",
     "price": "Prijs",
     "price_regular": "Normale prijs",
