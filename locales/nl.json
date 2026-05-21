@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "blocks": {
     "load_video": "Video laden: {{ description }}",
@@ -142,6 +151,8 @@
     "taxes_at_checkout_shipping_at_checkout_with_policy_html": "Belastingen, kortingen en <a href=\"{{ link }}\">verzending</a> worden bij de checkout berekend.",
     "taxes_at_checkout_shipping_at_checkout_without_policy": "Belastingen, kortingen en verzending worden bij de checkout berekend.",
     "checkout": "Afrekenen",
+    "min_qty_notice": "Voeg minimaal 3 producten toe om door te gaan naar de kassa.",
+    "min_qty_notice": "Voeg minimaal 3 producten, of een bundel, toe om verder te gaan.",
     "cart_title": "Winkelwagen",
     "price": "Prijs",
     "price_regular": "Normale prijs",
