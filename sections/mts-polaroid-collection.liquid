@@ -122,17 +122,6 @@
     transition: filter 0.4s ease, opacity 0.4s ease, transform 0.4s ease;
   }
 
-  /* --- WASHI TAPE --- */
-  .washi-tape {
-    position: absolute;
-    width: 80px;
-    height: 30px;
-    backdrop-filter: blur(1px);
-    z-index: 5;
-    pointer-events: none;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  }
-
   /* --- COFFEE STAIN --- */
   .coffee-stain {
     position: absolute;
@@ -350,7 +339,6 @@
 
   .seeds-card.zoomed::before { opacity: 0; }
 
-  .seeds-card.zoomed .washi-tape,
   .seeds-card.zoomed .coffee-stain {
     opacity: 0 !important;
     visibility: hidden;
@@ -552,14 +540,6 @@
     'rgba(242, 144, 45, 1)'
   ];
 
-  var tapeColors = [
-    'rgba(0, 27, 117, 0.35)',
-    'rgba(244, 217, 64, 0.55)',
-    'rgba(51, 114, 185, 0.40)',
-    'rgba(132, 132, 189, 0.45)',
-    'rgba(242, 144, 45, 0.40)'
-  ];
-
   var handwritingFonts = [
     "'Caveat', cursive",
     "'Kalam', cursive",
@@ -643,8 +623,6 @@
   var container = document.getElementById('seedsMasonry');
   if (!container) return;
 
-  var tapeChance       = 0.50;
-  var bottomTapeChance = 0.35;
   var stainChance      = 0.15;
   var decoChance       = 0.35;
 
@@ -668,28 +646,6 @@
     card.style.setProperty('--scatter-x',   sx.toFixed(0) + 'px');
     card.style.setProperty('--scatter-y',   sy.toFixed(0) + 'px');
     card.style.setProperty('--scatter-rot', sr.toFixed(0) + 'deg');
-
-    /* Washi tape */
-    if (Math.random() < tapeChance) {
-      var tape = document.createElement('div');
-      tape.className = 'washi-tape';
-      tape.style.backgroundColor = pick(tapeColors);
-      tape.style.top       = rand(-10, 5) + 'px';
-      tape.style.left      = rand(20, 60) + '%';
-      tape.style.transform = 'rotate(' + rand(-10, 10) + 'deg)';
-      card.appendChild(tape);
-
-      if (Math.random() < bottomTapeChance) {
-        var tape2 = document.createElement('div');
-        tape2.className = 'washi-tape';
-        tape2.style.backgroundColor = pick(tapeColors);
-        tape2.style.bottom   = rand(-10, 5) + 'px';
-        tape2.style.top      = 'auto';
-        tape2.style.left     = rand(20, 60) + '%';
-        tape2.style.transform = 'rotate(' + rand(-10, 10) + 'deg)';
-        card.appendChild(tape2);
-      }
-    }
 
     /* Coffee stain */
     if (Math.random() < stainChance) {
