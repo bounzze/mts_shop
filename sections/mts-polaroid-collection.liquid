@@ -610,9 +610,19 @@
     btn.textContent = 'Adding\u2026';
     btn.disabled = true;
     fetch('/cart/add.js', { method: 'POST', body: new FormData(e.target) })
+      .then(function (r) {
+        if (!r.ok) throw new Error('cart_error');
+        return r.json();
+      })
       .then(function () {
         btn.textContent = '\u2713 Added!';
-        document.dispatchEvent(new CustomEvent('cart:refresh'));
+        // Dispatch the theme's real cart:update event so cart icon + drawer re-render
+        document.dispatchEvent(new CustomEvent('cart:update', {
+          bubbles: true,
+          detail: {
+            data: { itemCount: 1, source: 'product-form-component' }
+          }
+        }));
         setTimeout(function () {
           window.closeSeedsZoom();
           btn.textContent = orig;
