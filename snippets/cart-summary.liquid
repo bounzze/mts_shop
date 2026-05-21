@@ -5,6 +5,19 @@
   @param {string} [section_id] - The section ID for cart discount component.
 {%- enddoc -%}
 
+{%- liquid
+  assign has_bundle = false
+  for item in cart.items
+    if item.item_components.size != 0
+      assign has_bundle = true
+    endif
+  endfor
+  assign min_qty_met = true
+  if cart.item_count < 3 and has_bundle == false
+    assign min_qty_met = false
+  endif
+-%}
+
 <div class="cart-totals">
   {% # We need to keep this node in place to allow morphing to work properly # %}
   <div class="cart-totals__original-container cart-primary-typography">
@@ -258,12 +271,17 @@
 </div>
 
 <div class="cart__ctas">
+  {% unless min_qty_met %}
+    <p class="cart__min-qty-notice" role="alert">
+      {{ 'content.min_qty_notice' | t }}
+    </p>
+  {% endunless %}
   <button
     type="submit"
     id="checkout"
     class="cart__checkout-button button"
     name="checkout"
-    {% if cart == empty %}
+    {% if cart == empty or min_qty_met == false %}
       disabled
     {% endif %}
     form="cart-form"
@@ -273,7 +291,7 @@
     </span>
   </button>
 
-  {% if additional_checkout_buttons and settings.show_accelerated_checkout_buttons %}
+  {% if additional_checkout_buttons and settings.show_accelerated_checkout_buttons and min_qty_met %}
     <div
       class="
         additional-checkout-buttons
@@ -604,5 +622,12 @@
     .cart-summary--extend {
       height: 100%;
     }
+  }
+
+  .cart__min-qty-notice {
+    margin-block-end: var(--margin-sm);
+    font-size: var(--font-size-sm, 0.875rem);
+    color: var(--color-foreground);
+    text-align: center;
   }
 {% endstylesheet %}

@@ -173,6 +173,7 @@
     "cart_subtotal": "Subtotal",
     "cart_total": "Cart total",
     "checkout": "Check out",
+    "min_qty_notice": "Add at least 3 products to proceed to checkout.",
     "collection_placeholder": "Collection title",
     "discount_code": "Discount code",
     "shipping_discount_error": "Shipping discounts are shown at checkout after adding an address",
