@@ -539,6 +539,21 @@
       })
       .then(function () {
         btn.textContent = '\u2713 Added!';
+
+        // Fly-to-cart animation
+        var cartIcon = document.querySelector('.header-actions__cart-icon');
+        var card = e.target.closest('.seeds-card');
+        var img = card && card.querySelector('img');
+        if (cartIcon && img) {
+          var flyEl = document.createElement('fly-to-cart');
+          flyEl.classList.add('fly-to-cart--quick');
+          flyEl.style.setProperty('background-image', 'url(' + img.src + ')');
+          flyEl.style.setProperty('--start-opacity', '0');
+          flyEl.source = btn;
+          flyEl.destination = cartIcon;
+          document.body.appendChild(flyEl);
+        }
+
         // Dispatch the theme's real cart:update event so cart icon + drawer re-render
         document.dispatchEvent(new CustomEvent('cart:update', {
           bubbles: true,
