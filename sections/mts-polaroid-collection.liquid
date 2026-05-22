@@ -6,7 +6,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Kalam:wght@400;700&family=Patrick+Hand&family=Indie+Flower&family=Architects+Daughter&family=Permanent+Marker&family=Covered+By+Your+Grace&family=Gochi+Hand&family=Zeyada&display=swap">
+
 
 {% style %}
   /* ---- POLAROID COLLAGE SECTION ---- */
@@ -103,35 +103,25 @@
     transition: opacity 0.4s ease;
   }
 
-  /* --- HANDWRITTEN NOTE (product name) --- */
+  /* --- PRODUCT NAME NOTE --- */
   .seeds-note {
     position: absolute;
     bottom: 12px;
     left: 0;
     right: 0;
     text-align: center;
-    font-family: 'Caveat', cursive;
-    font-size: 22px;
-    line-height: 1.1;
+    font-family: var(--font-heading--family, serif);
+    font-size: 16px;
+    font-weight: 600;
+    color: #001b75;
+    line-height: 1.2;
     pointer-events: none;
     user-select: none;
     padding: 0 10px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: filter 0.4s ease, opacity 0.4s ease, transform 0.4s ease;
-  }
-
-  /* --- COFFEE STAIN --- */
-  .coffee-stain {
-    position: absolute;
-    width: 120px;
-    height: 120px;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M100 20C55.8 20 20 55.8 20 100s35.8 80 80 80 80-35.8 80-80S144.2 20 100 20zm0 150c-38.6 0-70-31.4-70-70s31.4-70 70-70 70 31.4 70 70-31.4 70-70 70z' fill='%236F4E37' fill-opacity='0.1'/%3E%3Cpath d='M100 40c-33.1 0-60 26.9-60 60s26.9 60 60 60 60-26.9 60-60-26.9-60-60-60zm0 110c-27.6 0-50-22.4-50-50s22.4-50 50-50 50 22.4 50 50-22.4 50-50 50z' fill='%236F4E37' fill-opacity='0.05'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    pointer-events: none;
-    z-index: 4;
+    transition: opacity 0.4s ease;
   }
 
   /* --- PRICE TAG --- */
@@ -141,8 +131,8 @@
     right: 10px;
     background: #FFE000;
     color: #1d3686;
-    font-family: 'Caveat', cursive;
-    font-size: 17px;
+    font-family: var(--font-heading--family, serif);
+    font-size: 14px;
     font-weight: 700;
     line-height: 1;
     padding: 5px 9px 5px 11px;
@@ -171,15 +161,6 @@
     visibility: hidden;
   }
 
-  /* --- ARROW DECO --- */
-  .seeds-deco {
-    position: absolute;
-    bottom: 12px;
-    pointer-events: none;
-    user-select: none;
-    opacity: 0.75;
-  }
-
   /* --- HOVER --- */
   .seeds-card:hover {
     transform: translateY(-15px) rotate(0deg) scale(1.05) !important;
@@ -190,7 +171,6 @@
   /* fade out note + price tag so action strip has room */
   .seeds-card:hover .seeds-note {
     opacity: 0;
-    transform: translateY(-10px) rotate(0deg) !important;
   }
 
   .seeds-card:hover .seeds-price-tag {
@@ -338,11 +318,6 @@
   }
 
   .seeds-card.zoomed::before { opacity: 0; }
-
-  .seeds-card.zoomed .coffee-stain {
-    opacity: 0 !important;
-    visibility: hidden;
-  }
 
   @keyframes zoomIn {
     from { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
@@ -528,36 +503,6 @@
 <script>
 (function () {
   /* --- DATA --- */
-  var inkColors = [
-    'rgb(0, 27, 117)',
-    'rgb(0, 27, 117)',
-    'rgb(0, 27, 117)',
-    'rgb(0, 27, 117)',
-    'rgba(51, 114, 185, 1)',
-    'rgba(51, 114, 185, 1)',
-    'rgba(132, 132, 189, 1)',
-    'rgba(244, 217, 64, 1)',
-    'rgba(242, 144, 45, 1)'
-  ];
-
-  var handwritingFonts = [
-    "'Caveat', cursive",
-    "'Kalam', cursive",
-    "'Patrick Hand', cursive",
-    "'Indie Flower', cursive",
-    "'Architects Daughter', cursive",
-    "'Permanent Marker', cursive",
-    "'Covered By Your Grace', cursive",
-    "'Gochi Hand', cursive",
-    "'Zeyada', cursive"
-  ];
-
-  var decorations = [
-    '<svg viewBox="0 0 50 50" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 40 C12 30 22 15 38 12"></path><path d="M32 10 C34 14 36 18 38 12 C34 13 30 12 28 10"></path></svg>',
-    '<svg viewBox="0 0 50 50" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M42 38 C36 28 20 16 8 14"></path><path d="M14 10 C12 14 10 18 8 14 C12 14 16 12 18 10"></path></svg>',
-    '<svg viewBox="0 0 50 30" width="44" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15 C14 12 28 12 42 14"></path><path d="M34 8 C37 11 40 14 42 14 C40 17 37 20 35 22"></path></svg>'
-  ];
-
   function rand(min, max) { return min + Math.random() * (max - min); }
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -623,62 +568,17 @@
   var container = document.getElementById('seedsMasonry');
   if (!container) return;
 
-  var stainChance      = 0.15;
-  var decoChance       = 0.35;
-
   var cards = container.querySelectorAll('.seeds-card');
 
   cards.forEach(function (card, index) {
-    /* Random rotation / scale / spacing */
-    var rot   = rand(-5, 5).toFixed(1);
-    var scale = rand(0.94, 1.04).toFixed(2);
-    card.style.setProperty('--rot', rot + 'deg');
-    card.style.transform    = 'rotate(' + rot + 'deg) scale(' + scale + ')';
-    card.style.marginTop    = rand(-20, 10).toFixed(0) + 'px';
-    card.style.marginBottom = rand(-30, -10).toFixed(0) + 'px';
-    card.style.animationDelay = (index * 0.1) + 's';
+    /* Straight cards, even spacing, simple fade-in */
+    card.style.setProperty('--rot', '0deg');
+    card.style.setProperty('--scatter-x', '0px');
+    card.style.setProperty('--scatter-y', '30px');
+    card.style.setProperty('--scatter-rot', '0deg');
+    card.style.animationDelay = (index * 0.07) + 's';
 
-    /* Scatter-in CSS vars */
-    var d  = Math.random();
-    var sx = d < 0.33 ? rand(-100, -40) : d < 0.66 ? rand(40, 100) : rand(-20, 20);
-    var sy = d < 0.66 ? rand(20, 50) : rand(50, 80);
-    var sr = d < 0.33 ? rand(8, 20) : d < 0.66 ? rand(-20, -8) : rand(-15, 15);
-    card.style.setProperty('--scatter-x',   sx.toFixed(0) + 'px');
-    card.style.setProperty('--scatter-y',   sy.toFixed(0) + 'px');
-    card.style.setProperty('--scatter-rot', sr.toFixed(0) + 'deg');
-
-    /* Coffee stain */
-    if (Math.random() < stainChance) {
-      var stain = document.createElement('div');
-      stain.className = 'coffee-stain';
-      stain.style.top       = rand(0, 80) + '%';
-      stain.style.left      = rand(-10, 70) + '%';
-      stain.style.transform = 'rotate(' + rand(0, 360) + 'deg) scale(' + rand(0.5, 1.5) + ')';
-      card.appendChild(stain);
-    }
-
-    /* Style the handwritten product-name note */
-    var noteEl = card.querySelector('.seeds-note');
-    if (noteEl) {
-      var ink  = pick(inkColors);
-      var font = pick(handwritingFonts);
-      noteEl.style.color      = ink;
-      noteEl.style.fontFamily = font;
-      noteEl.style.transform  = 'rotate(' + rand(-3, 3).toFixed(1) + 'deg)';
-
-      /* Arrow deco (skip heavy fonts) */
-      if (font.indexOf('Permanent Marker') === -1 && Math.random() < decoChance) {
-        var deco = document.createElement('div');
-        deco.className = 'seeds-deco';
-        deco.innerHTML = pick(decorations);
-        var side = Math.random() > 0.5 ? 'left' : 'right';
-        deco.style[side]   = rand(8, 24).toFixed(0) + 'px';
-        deco.style.bottom  = rand(6, 22).toFixed(0) + 'px';
-        deco.style.transform = 'rotate(' + rand(-15, 15).toFixed(1) + 'deg)';
-        deco.style.color   = ink;
-        card.appendChild(deco);
-      }
-    }
+    /* No per-card font/colour randomisation — theme font used via CSS */
 
     /* Click handler — zoom on card click, ignore zoom-panel / hover-action clicks */
     card.addEventListener('click', function (e) {

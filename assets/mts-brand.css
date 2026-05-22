@@ -269,8 +269,8 @@ cart-drawer .cart-drawer__close,
     -45deg,
     transparent 0px,
     transparent 32px,
-    rgba(255, 255, 255, 0.35) 32px,
-    rgba(255, 255, 255, 0.35) 60px
+    rgba(255, 255, 255, 0.90) 32px,
+    rgba(255, 255, 255, 0.90) 60px
   );
 }
 
@@ -286,7 +286,7 @@ cart-drawer .cart-drawer__close,
     #ffffff 32px,
     #ffffff 60px
   );
-  opacity: 0.55;
+  opacity: 1;
   pointer-events: none;
   z-index: 0;
 }
