@@ -1,0 +1,12 @@
+mutation {
+  storefrontAccessTokenCreate(input: { title: "MTS Cart API" }) {
+    storefrontAccessToken {
+      accessToken
+      title
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}

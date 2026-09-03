@@ -1,0 +1,10 @@
+name = "MTS Cart api"
+client_id = "ffc81fc4444383ae2088486608c6d969"
+application_url = "https://example.com"
+embedded = true
+
+[auth]
+redirect_urls = ["https://example.com/callback"]
+
+[webhooks]
+api_version = "2026-04"

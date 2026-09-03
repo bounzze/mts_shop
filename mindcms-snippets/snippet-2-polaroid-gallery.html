@@ -1,0 +1,788 @@
+﻿<!--
+  SNIPPET 2 — Polaroid Product Gallery
+  ======================================
+  Paste this as the SECOND HTML block on the shop page in mindcms,
+  directly after snippet 1.
+
+  No configuration needed — reads products from your public Shopify store.
+  Works with the cart engine set up in snippet 1.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Akshar:wght@600&family=Assistant:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ── GRID ────────────────────────────────────────────── */
+  .mts-polaroid-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    padding: 32px 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  @media (max-width: 1200px) { .mts-polaroid-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 800px)  { .mts-polaroid-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px)  { .mts-polaroid-grid { grid-template-columns: 1fr; } }
+
+  /* ── CARD ────────────────────────────────────────────── */
+  .mts-card {
+    background: #fff;
+    border-radius: 3px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    animation: mts-fade-in 0.5s ease both;
+  }
+  .mts-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+  }
+  @keyframes mts-fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── IMAGE ───────────────────────────────────────────── */
+  .mts-card-img-wrap {
+    padding: 12px 12px 0;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: #f5f8fb;
+  }
+  .mts-card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .mts-card:hover .mts-card-img-wrap img {
+    transform: scale(1.04);
+  }
+
+  /* ── LABEL (polaroid bottom strip) ──────────────────── */
+  .mts-card-label {
+    padding: 10px 12px 14px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .mts-card-title {
+    font-family: 'Abril Fatface', Georgia, serif;
+    font-size: 16px;
+    color: #001b75;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .mts-card-price {
+    font-family: 'Assistant', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #001b75;
+    opacity: 0.7;
+  }
+
+  /* ── PRICE STICKER ──────────────────────────────── */
+  .mts-price-tag {
+    position: absolute;
+    bottom: 72px;
+    right: -4px;
+    background: #FFE000;
+    color: #1d3686;
+    font-family: 'Abril Fatface', Georgia, serif;
+    font-size: 20px;
+    line-height: 1;
+    padding: 8px 14px 8px 16px;
+    border-radius: 4px 4px 4px 0;
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.28);
+    pointer-events: none;
+    user-select: none;
+    z-index: 6;
+    white-space: nowrap;
+    transform: rotate(2deg);
+    transition: opacity 0.22s ease;
+  }
+  .mts-price-tag::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    border-left: 8px solid #b8a000;
+    border-bottom: 8px solid transparent;
+  }
+  .mts-card:hover .mts-price-tag {
+    opacity: 0;
+  }
+
+  /* ── HOVER ACTION STRIP ──────────────────────────────── */
+  .mts-card-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    background: linear-gradient(to top, rgba(255,255,255,0.97) 70%, transparent);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    pointer-events: none;
+  }
+  .mts-card:hover .mts-card-actions {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* ── BUTTONS ─────────────────────────────────────────── */
+  .mts-btn {
+    font-family: 'Akshar', Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 6px 13px;
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    border: 2px solid #1d3686;
+    background: transparent;
+    color: #1d3686;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s, transform 0.15s;
+    line-height: 1.3;
+  }
+  .mts-btn:hover {
+    background: #1d3686;
+    color: #fff;
+    transform: scale(1.05);
+  }
+  .mts-btn[disabled] {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+  }
+  .mts-btn--sold-out {
+    border-color: #aaa;
+    color: #aaa;
+    cursor: default;
+  }
+  .mts-btn--sold-out:hover {
+    background: transparent;
+    color: #aaa;
+    transform: none;
+  }
+
+  /* ── SECTION HEADER ────────────────────────────────────── */
+  .mts-section-header {
+    background-color: #FFE000;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0px,
+      transparent 32px,
+      rgba(255,255,255,0.90) 32px,
+      rgba(255,255,255,0.90) 60px
+    );
+    padding: 20px 16px;
+    text-align: left;
+  }
+  .mts-section-header h2 {
+    font-family: 'Abril Fatface', Georgia, serif;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: #001b75;
+    margin: 0;
+    line-height: 1.1;
+  }
+
+  /* ── LOADING / ERROR STATES ──────────────────────────── */
+  .mts-loading, .mts-error {
+    text-align: center;
+    padding: 48px 24px;
+    font-family: 'Assistant', 'Helvetica Neue', sans-serif;
+    color: #001b75;
+    font-size: 18px;
+  }
+
+  /* ── PRODUCT DETAIL VIEW ────────────────────────────────────── */
+  .mts-detail {
+    display: grid;
+    grid-template-columns: 42% 58%;
+    max-width: 1400px;
+    margin: 0 auto;
+    animation: mts-fade-in 0.3s ease both;
+  }
+  .mts-detail-back-bar {
+    grid-column: 1 / -1;
+    padding: 20px 32px 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .mts-back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Assistant', 'Helvetica Neue', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #001b75;
+    padding: 0;
+    opacity: 0.55;
+    letter-spacing: 0.04em;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: opacity 0.15s, text-decoration-color 0.15s;
+  }
+  .mts-back-btn:hover { opacity: 1; text-decoration-color: #001b75; }
+  .mts-detail-img-col {
+    padding: 36px 28px 36px 32px;
+    background: #f5f8fb;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .mts-detail-img-col img {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  }
+  .mts-detail-info-col {
+    padding: 40px 48px 48px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0; /* prevent flex/grid column collapse */
+  }
+  .mts-detail-title {
+    font-family: 'Abril Fatface', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: #001b75;
+    margin: 0;
+    line-height: 1.05;
+  }
+  .mts-detail-price {
+    font-family: 'Abril Fatface', Georgia, serif;
+    font-size: 1.6rem;
+    color: #1d3686;
+    background: #FFE000;
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 4px;
+    margin: 0;
+    align-self: flex-start;
+    box-shadow: 2px 3px 10px rgba(0,0,0,0.14);
+  }
+  .mts-detail-desc {
+    font-family: 'Assistant', 'Helvetica Neue', sans-serif !important;
+    font-size: 17px;
+    color: #1d3686;
+    line-height: 1.75;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .mts-detail-desc * { max-width: 100%; box-sizing: border-box; }
+  .mts-detail-desc p  { display: block; width: 100%; margin: 0 0 0.8em; font-family: 'Assistant', 'Helvetica Neue', sans-serif !important; font-size: 1.2rem !important; color: #1d3686 !important; }
+  .mts-detail-desc h1,
+  .mts-detail-desc h2,
+  .mts-detail-desc h3 {
+    display: block !important;
+    width: 100% !important;
+    font-family: 'Abril Fatface', Georgia, serif !important;
+    color: #001b75 !important;
+    margin: 1em 0 0.4em;
+    line-height: 1.2;
+  }
+  .mts-detail-desc h1 { font-size: 1.5rem !important; }
+  .mts-detail-desc h2 { font-size: 1.3rem !important; }
+  .mts-detail-desc h3 { font-size: 1.4rem !important; }
+
+  /* h4/h5/h6 → Akshar uppercase labels, matching mts-brand.css */
+  .mts-detail-desc h4,
+  .mts-detail-desc h5,
+  .mts-detail-desc h6 {
+    display: block !important;
+    width: 100% !important;
+    font-family: 'Akshar', Arial, sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    color: #001b75 !important;
+    margin: 1.2em 0 0.3em !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ── INGREDIENTS YELLOW BOX ── */
+  /* Triggered by <h6 class="product--ingredients-label"> in the description.
+     Wraps that heading + the two paragraphs that follow in a yellow box,
+     matching the styling on the real meettheseeds.com product page. */
+  .mts-detail-desc h6.product--ingredients-label {
+    background: #FFE000;
+    color: #1d3686 !important;
+    margin: 1.2em 0 0 !important;
+    padding: 10px 16px 6px;
+    border-radius: 4px 4px 0 0;
+  }
+  .mts-detail-desc h6.product--ingredients-label + p,
+  .mts-detail-desc h6.product--ingredients-label + p + p {
+    background: #FFE000;
+    color: #1d3686;
+    margin: 0 !important;
+    padding: 0 16px;
+  }
+  .mts-detail-desc h6.product--ingredients-label + p + p {
+    padding-bottom: 10px;
+    border-radius: 0 0 4px 4px;
+    margin-bottom: 0.8em !important;
+  }
+  .mts-detail-desc ul,
+  .mts-detail-desc ol {
+    display: block !important;
+    width: 100% !important;
+    padding-left: 1.4em;
+    margin: 0 0 0.8em;
+  }
+  .mts-detail-desc li {
+    display: list-item !important;
+    width: auto !important;
+    float: none !important;
+    font-family: 'Assistant', 'Helvetica Neue', sans-serif !important;
+    font-size: 1.2rem;
+    color: #1d3686;
+    line-height: 1.75;
+  }
+
+  /* ── RESET SHOPIFY BOOTSTRAP GRID IN DESCRIPTION ── */
+  /* body_html uses col-*, row, container from the Shopify theme;
+     mindcms loads Bootstrap so those classes get real widths.
+     The JS stripBootstrapGrid() function removes them before render;
+     these rules are a fallback only. */
+  .mts-detail-desc .container,
+  .mts-detail-desc .container-fluid,
+  .mts-detail-desc .row,
+  .mts-detail-desc section {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    flex-wrap: unset !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .mts-detail-desc [class*="col-"],
+  .mts-detail-desc [class^="col-"] {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .mts-detail-footer {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    flex-wrap: wrap;
+  }
+  .mts-btn--lg { font-size: 16px; padding: 11px 28px; }
+  .mts-detail-ext {
+    font-family: 'Assistant', 'Helvetica Neue', sans-serif;
+    font-size: 13px;
+    color: #001b75;
+    opacity: 0.4;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: opacity 0.15s;
+  }
+  .mts-detail-ext:hover { opacity: 0.85; text-decoration: underline; }
+
+  /* ── SHIPPING INFO PILLS ─────────────────────────────── */
+  .mts-detail-shipping {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .mts-detail-shipping-pill {
+    font-family: 'Assistant', 'Helvetica Neue', sans-serif;
+    font-size: 0.92rem;
+    color: #1d3686;
+    background: #f0f4ff;
+    border: 1px solid #c8d2ef;
+    border-radius: 20px;
+    padding: 3px 11px;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 700px) {
+    .mts-detail { grid-template-columns: 1fr; }
+    .mts-detail-img-col { padding: 20px; }
+    .mts-detail-img-col img { aspect-ratio: 4 / 3; }
+    .mts-detail-info-col { padding: 24px 20px 32px; }
+  }
+</style>
+
+<div id="mts-polaroid-root"></div>
+
+<script>
+(function () {
+  var STORE = 'meet-the-seeds.myshopify.com';
+
+  /*
+   * STOREFRONT API ACCESS TOKEN
+   * ────────────────────────────────────────────────────────────────────
+   * 1. Shopify Admin → Settings → Apps → Develop apps → Create an app
+   * 2. Configure Storefront API scopes → enable
+   *    "Read products, variants and collections" → Save
+   * 3. API credentials tab → copy the Storefront API access token here.
+   */
+  var STOREFRONT_TOKEN = 'YOUR_STOREFRONT_API_TOKEN_HERE';
+
+  /*
+   * SHOW_BUNDLES — set to true once the Storefront Cart API token (CART_TOKEN
+   * in snippet 1) is configured, so bundle products can be added to the cart.
+   * Set to false to hide all products whose handle contains 'bundle'.
+   */
+  var SHOW_BUNDLES = false;
+
+  /*
+   * METAFIELD IDENTIFIERS
+   * ────────────────────────────────────────────────────────────────────
+   * Match these to your metafield definitions in Shopify Admin →
+   * Products → any product → scroll to Metafields.
+   * The namespace is usually "custom"; the key is the field name.
+   */
+  var SHIPPING_COST_META = { namespace: 'custom', key: 'shipping_cost' };
+  var DELIVERY_TIME_META = { namespace: 'custom', key: 'delivery_time' };
+
+  /*
+   * PRODUCT ORDER — list product handles in the order you want them displayed.
+   * Find a product's handle in Shopify Admin → Products → the URL slug
+   * (e.g. the product at /products/seed-circles has handle 'seed-circles').
+   * Leave the array empty [] to use Shopify's default order.
+   */
+  var PRODUCT_ORDER = [
+    'seed-circles',
+    'mini-seed-circles',
+    'seed-stix',
+    'seed-crunch',
+    'seed-crunch-red-apple',
+    'breakfast-bundle',
+    'snack-bundle'
+  ];
+
+  var root  = document.getElementById('mts-polaroid-root');
+  var currentProducts = []; /* saved on first fetch so "back" can rebuild the grid */
+  var currentDetailProduct = null; /* tracks detail view for language re-renders */
+  function t(key) { return typeof window.mtsT === 'function' ? window.mtsT(key) : key; }
+
+  /* ── STRIP BOOTSTRAP GRID CLASSES FROM SHOPIFY body_html ─────────── */
+  /* Shopify theme descriptions embed Bootstrap grid markup (col-*, row, etc.).
+   * mindcms also loads Bootstrap, so those classes get real widths and break
+   * the layout. This function removes Bootstrap grid/layout classes only,
+   * leaving all other classes (product--, element, etc.) intact. */
+  function stripBootstrapGrid(html) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    var STRIP = [
+      /* grid columns */
+      /\bcol(?:-(?:sm|md|lg|xl|xxl))?(?:-(?:1[0-2]|[1-9]|auto))?\b/g,
+      /* row & row-cols */
+      /\brow(?:-cols(?:-(?:sm|md|lg|xl|xxl))?-(?:\d+|auto))?\b/g,
+      /* containers */
+      /\bcontainer(?:-(?:sm|md|lg|xl|xxl|fluid))?\b/g,
+      /* flexbox alignment */
+      /\bjustify-content-\S+/g,
+      /\balign-(?:items|self|content)-\S+/g,
+      /* order & offset */
+      /\border-(?:(?:sm|md|lg|xl|xxl)-)?(?:\d+|first|last)\b/g,
+      /\boffset-(?:(?:sm|md|lg|xl|xxl)-)?\d+\b/g,
+      /* gutters */
+      /\bg[xy]?-(?:(?:sm|md|lg|xl|xxl)-)?(?:\d+|auto)\b/g,
+      /* spacing utilities  m-0  mt-3  py-sm-2  etc. */
+      /\b[mp][trblxyse]?-(?:(?:sm|md|lg|xl|xxl)-)?(?:auto|\d+)\b/g,
+      /* display utilities */
+      /\bd-(?:(?:sm|md|lg|xl|xxl)-)?(?:none|block|inline(?:-\w+)?|flex|grid|table(?:-\w+)?)\b/g,
+      /* flex direction */
+      /\bflex-(?:row|column)(?:-reverse)?\b/g,
+    ];
+    tmp.querySelectorAll('[class]').forEach(function (el) {
+      var cls = el.className;
+      STRIP.forEach(function (re) { cls = cls.replace(re, ''); });
+      cls = cls.replace(/\s+/g, ' ').trim();
+      if (cls) { el.className = cls; } else { el.removeAttribute('class'); }
+    });
+    return tmp.innerHTML;
+  }
+
+  /* ── NORMALIZE STOREFRONT API PRODUCT NODE → REST-LIKE SHAPE ────── */
+  /* Maps a GraphQL product node to the shape used throughout the renderer,
+   * adding shippingCost and deliveryTime from metafields. */
+  function normalizeProduct(node) {
+    var ve = node.variants && node.variants.edges[0] ? node.variants.edges[0].node : {};
+    /* Strip the GID prefix so the existing 'gid://shopify/ProductVariant/' + id construction still works */
+    var numericId = (ve.id || '').replace('gid://shopify/ProductVariant/', '');
+    return {
+      title:        node.title,
+      handle:       node.handle,
+      body_html:    node.descriptionHtml || '',
+      images:       (node.images.edges || []).map(function (e) { return { src: e.node.url }; }),
+      variants:     [{ id: numericId, price: ve.price ? ve.price.amount : '0', available: ve.availableForSale || false }],
+      shippingCost: node.shippingCost ? node.shippingCost.value : null,
+      deliveryTime: node.deliveryTime ? node.deliveryTime.value : null
+    };
+  }
+
+  /* ── FORMAT PRICE ──────────────────────────────────────── */
+  function formatPrice(priceStr) {
+    var n = parseFloat(priceStr);
+    return '\u20AC' + n.toFixed(2).replace('.', ',');
+  }
+
+  /* ── SHOW PRODUCT DETAIL VIEW ────────────────────────────── */
+  function showDetail(product) {
+    currentDetailProduct = product;
+    var variant    = product.variants[0];
+    var variantGid = 'gid://shopify/ProductVariant/' + variant.id;
+    var imgSrc     = product.images[0] ? product.images[0].src : '';
+    var productUrl = 'https://' + STORE + '/products/' + product.handle;
+
+    var detail = document.createElement('div');
+    detail.className = 'mts-detail';
+    detail.innerHTML =
+      '<div class="mts-detail-back-bar">' +
+        '<button class="mts-back-btn">' + t('all_products') + '</button>' +
+      '</div>' +
+      '<div class="mts-detail-img-col">' +
+        (imgSrc ? '<img src="' + imgSrc + '" alt="' + product.title + '">' : '') +
+      '</div>' +
+      '<div class="mts-detail-info-col">' +
+        '<h2 class="mts-detail-title">' + product.title + '</h2>' +
+        '<p class="mts-detail-price">' + formatPrice(variant.price) + '</p>' +
+        (product.shippingCost || product.deliveryTime
+          ? '<div class="mts-detail-shipping">' +
+              (product.shippingCost ? '<span class="mts-detail-shipping-pill">🚚 ' + product.shippingCost + '</span>' : '') +
+              (product.deliveryTime ? '<span class="mts-detail-shipping-pill">⏱ ' + product.deliveryTime + '</span>' : '') +
+            '</div>'
+          : '') +
+        /* body_html is stripped of Bootstrap grid classes then rendered */
+        '<div class="mts-detail-desc">' + (product.body_html ? stripBootstrapGrid(product.body_html) : '<em>' + t('no_description') + '</em>') + '</div>' +
+        '<div class="mts-detail-footer">' +
+          (variant.available
+            ? '<button class="mts-btn mts-btn--lg mts-detail-atc">' + t('add_to_cart') + '</button>'
+            : '<span class="mts-btn mts-btn--sold-out">' + t('sold_out') + '</span>'
+          ) +
+          /*'<a class="mts-detail-ext" href="' + productUrl + '" target="_blank">' + t('open_in_store') + '</a>' + */
+        '</div>' +
+      '</div>';
+
+    root.innerHTML = '';
+    root.appendChild(detail);
+    root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    /* ── back to grid ── */
+    detail.querySelector('.mts-back-btn').addEventListener('click', showGrid);
+
+    /* ── add to cart ── */
+    var atcBtn = detail.querySelector('.mts-detail-atc');
+    if (atcBtn) {
+      atcBtn.addEventListener('click', function () {
+        var origText = atcBtn.textContent;
+        atcBtn.textContent = t('adding');
+        atcBtn.disabled = true;
+        var addTimer = setTimeout(function () {
+          atcBtn.textContent = t('try_again'); atcBtn.disabled = false;
+        }, 15000);
+
+        if (typeof window.mtsAddToCart !== 'function') {
+          clearTimeout(addTimer);
+          console.error('[MTS] mtsAddToCart not defined — is snippet 1 on the page?');
+          atcBtn.textContent = t('error_retry'); atcBtn.disabled = false;
+        } else {
+          window.mtsAddToCart(variantGid,
+            function () {
+              clearTimeout(addTimer);
+              atcBtn.textContent = t('added');
+              setTimeout(function () { atcBtn.textContent = origText; atcBtn.disabled = false; }, 1500);
+            },
+            function (err) {
+              clearTimeout(addTimer);
+              console.error('[MTS] Add to cart error:', err);
+              atcBtn.textContent = t('error_retry'); atcBtn.disabled = false;
+            }
+          );
+        }
+      });
+    }
+  }
+
+  /* ── BACK TO GRID ────────────────────────────────────────── */
+  function showGrid() {
+    currentDetailProduct = null;
+    root.innerHTML = '';
+    renderGrid(currentProducts);
+    root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ── BUILD POLAROID CARD ───────────────────────────────── */
+  function buildCard(product, index) {
+    var variant   = product.variants[0];
+    var available = variant.available;
+    var image     = product.images[0] ? product.images[0].src : '';
+    var variantGid = 'gid://shopify/ProductVariant/' + variant.id;
+
+    var card = document.createElement('div');
+    card.className = 'mts-card';
+    card.style.animationDelay = (index * 0.07) + 's';
+
+    card.innerHTML =
+      '<div class="mts-card-img-wrap">' +
+        (image ? '<img src="' + image + '" alt="' + product.title + '" loading="lazy">' : '') +
+      '</div>' +
+      '<div class="mts-card-label">' +
+        '<p class="mts-card-title">' + product.title + '</p>' +
+      '</div>' +
+      '<span class="mts-price-tag">' + formatPrice(variant.price) + '</span>' +
+      '<div class="mts-card-actions">' +
+        (available
+          ? '<button class="mts-btn mts-btn--atc" data-variant-gid="' + variantGid + '" data-img="' + image + '">' + t('add_to_cart') + '</button>'
+          : '<span class="mts-btn mts-btn--sold-out">' + t('sold_out') + '</span>'
+        ) +
+        '<button class="mts-btn mts-btn--detail">' + t('see_more') + '</button>' +
+      '</div>';
+
+    /* open detail view — skip only the ATC / sold-out buttons */
+    card.addEventListener('click', function (e) {
+      if (e.target.closest('.mts-btn--atc') || e.target.closest('.mts-btn--sold-out')) return;
+      showDetail(product);
+    });
+
+    return card;
+  }
+
+  /* ── RENDER GRID ───────────────────────────────────────── */
+  function renderGrid(products) {
+    var grid = document.createElement('div');
+    grid.className = 'mts-polaroid-grid';
+
+    products.forEach(function (product, i) {
+      grid.appendChild(buildCard(product, i));
+    });
+
+    root.innerHTML = '';
+    root.appendChild(grid);
+
+    /* ── ADD TO CART handler ─────────────────────────────── */
+    grid.addEventListener('click', function (e) {
+      var btn = e.target.closest('.mts-btn--atc');
+      if (!btn) return;
+      e.stopPropagation();
+
+      var variantGid = btn.dataset.variantGid;
+      var imgSrc     = btn.dataset.img;
+      var origText   = btn.textContent;
+
+      btn.textContent = t('adding');
+      btn.disabled = true;
+
+      var addTimer = setTimeout(function () {
+        btn.textContent = t('try_again');
+        btn.disabled = false;
+      }, 15000);
+
+      if (typeof window.mtsAddToCart !== 'function') {
+        clearTimeout(addTimer);
+        console.error('[MTS] mtsAddToCart not defined — is snippet 1 on the page?');
+        btn.textContent = t('error_retry');
+        btn.disabled = false;
+      } else {
+        window.mtsAddToCart(variantGid,
+          function () {
+            clearTimeout(addTimer);
+            btn.textContent = t('added');
+
+            /* fly-to-cart animation if theme element exists (same-page embeds) */
+            var cartIcon = document.querySelector('.header-actions__cart-icon');
+            if (cartIcon && imgSrc) {
+              var fly = document.createElement('fly-to-cart');
+              fly.classList.add('fly-to-cart--quick');
+              fly.style.setProperty('background-image', 'url(' + imgSrc + ')');
+              fly.style.setProperty('--start-opacity', '0');
+              fly.source = btn;
+              fly.destination = cartIcon;
+              document.body.appendChild(fly);
+            }
+
+            setTimeout(function () {
+              btn.textContent = origText;
+              btn.disabled = false;
+            }, 1500);
+          },
+          function (err) {
+            clearTimeout(addTimer);
+            console.error('[MTS] Add to cart error:', err);
+            btn.textContent = t('error_retry');
+            btn.disabled = false;
+          }
+        );
+      }
+    });
+  }
+
+  /* ── FETCH PRODUCTS ────────────────────────────────────── */
+  root.innerHTML = '<div class="mts-loading">' + t('loading_products') + '</div>';
+
+  fetch('https://' + STORE + '/products.json?limit=50')
+    .then(function (r) {
+      if (!r.ok) throw new Error('fetch error');
+      return r.json();
+    })
+    .then(function (data) {
+      if (!data.products || !data.products.length) {
+        root.innerHTML = '<div class="mts-error">' + t('no_products') + '</div>';
+        return;
+      }
+      var products = data.products;
+      if (!SHOW_BUNDLES) {
+        products = products.filter(function (p) { return p.handle.indexOf('bundle') === -1; });
+      }
+      if (PRODUCT_ORDER.length) {
+        products = products.slice().sort(function (a, b) {
+          var ai = PRODUCT_ORDER.indexOf(a.handle);
+          var bi = PRODUCT_ORDER.indexOf(b.handle);
+          if (ai === -1) ai = PRODUCT_ORDER.length; /* unlisted → end */
+          if (bi === -1) bi = PRODUCT_ORDER.length;
+          return ai - bi;
+        });
+      }
+      currentProducts = products;
+      renderGrid(products);
+    })
+    .catch(function () {
+      root.innerHTML = '<div class="mts-error">' + t('load_error') + '</div>';
+    });
+
+  /* Re-render current view when language changes (requires snippet 3) */
+  document.addEventListener('mts-lang-change', function () {
+    if (currentDetailProduct) { showDetail(currentDetailProduct); }
+    else if (currentProducts.length) { showGrid(); }
+  });
+})();
+</script>

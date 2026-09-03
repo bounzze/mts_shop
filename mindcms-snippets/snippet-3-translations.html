@@ -1,0 +1,170 @@
+<script>
+/*
+  Collapse the CMS block wrapper around this hidden snippet.
+*/
+(function () {
+  var el = document.currentScript && document.currentScript.parentElement;
+  if (!el || el === document.body) return;
+
+  while (el !== document.body) {
+    var p = el.parentElement;
+    if (!p || p === document.body) {
+      el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;';
+      break;
+    }
+    if (p.children.length > 1) {
+      el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;';
+      break;
+    }
+    el = p;
+  }
+}());
+</script>
+
+<!--
+  SNIPPET 3 — Translations / i18n
+  =================================
+  Paste this as the FIRST HTML block on the shop page in mindcms,
+  BEFORE snippet 1 (cart engine) and snippet 2 (product gallery).
+
+  Exposes:
+    window.mtsT(key)           — translate a key in the active language
+    window.mtsSetLang(code)    — change language, persist, fire 'mts-lang-change' event
+    window.mtsLang             — currently active language code
+    window.mtsLangs            — array of { code, flag, label } for building selectors
+    window.mtsI18n             — the raw translations object
+
+  The active language is auto-detected:
+    1. localStorage key 'mts_lang' (user preference)
+    2. Browser language (navigator.language)
+    3. Falls back to 'en'
+
+  To add more languages:
+    1. Add a new block inside TRANSLATIONS below
+    2. Add an entry to the LANGUAGES array
+-->
+<script>
+(function () {
+  /* ── SUPPORTED LANGUAGES ── */
+  var LANGUAGES = [
+    { code: 'nl', flag: '🇳🇱', label: 'Nederlands' },
+    { code: 'en', flag: '🇬🇧', label: 'English'    },
+    /* { code: 'de', flag: '🇩🇪', label: 'Deutsch'    } */
+  ];
+
+  /* ── TRANSLATIONS ── */
+  var TRANSLATIONS = {
+
+    /* ─── Dutch ─── */
+    nl: {
+      cart_title:       'Winkelwagen',
+      close_cart:       'Sluit winkelwagen',
+      open_cart:        'Open winkelwagen',
+      subtotal:         'Subtotaal',
+      checkout:         'Afrekenen',
+      cart_empty:       'Je mandje is nog leeg \u2014 ontdek onze zaadproducten!',
+      loading:          'Laden\u2026',
+      loading_failed:   'Laden mislukt.',
+      decrease_qty:     'Aantal verlagen',
+      increase_qty:     'Aantal verhogen',
+      min_qty_notice:   'Voeg minimaal 6 producten, of een bundel, toe om verder te gaan.',
+      all_products:     '\u2190 Alle producten',
+      loading_products: 'Producten laden\u2026',
+      no_products:      'Geen producten gevonden.',
+      load_error:       'Kon producten niet laden. Ververs de pagina.',
+      no_description:   'Geen omschrijving beschikbaar.',
+      add_to_cart:      '+ in winkelwagen',
+      adding:           'Toevoegen\u2026',
+      added:            '\u2713 Toegevoegd!',
+      error_retry:      'Fout \u2014 opnieuw',
+      try_again:        'Opnieuw proberen',
+      sold_out:         'Uitverkocht',
+      see_more:         'meer zien \u2192',
+      open_in_store:    'open in winkel \u2197'
+    },
+
+    /* ─── English ─── */
+    en: {
+      cart_title:       'Your cart',
+      close_cart:       'Close cart',
+      open_cart:        'Open cart',
+      subtotal:         'Subtotal',
+      checkout:         'Check out',
+      cart_empty:       'Your cart is empty \u2014 explore our crispy seed products!',
+      loading:          'Loading\u2026',
+      loading_failed:   'Loading failed.',
+      decrease_qty:     'Decrease quantity',
+      increase_qty:     'Increase quantity',
+      min_qty_notice:   'Add at least 6 products, or a bundle, to proceed to checkout.',
+      all_products:     '\u2190 All products',
+      loading_products: 'Loading products\u2026',
+      no_products:      'No products found.',
+      load_error:       'Could not load products. Please refresh the page.',
+      no_description:   'No description available.',
+      add_to_cart:      '+ add to cart',
+      adding:           'Adding\u2026',
+      added:            '\u2713 Added!',
+      error_retry:      'Error \u2014 retry',
+      try_again:        'Try again',
+      sold_out:         'Sold out',
+      see_more:         'see more \u2192',
+      open_in_store:    'open in store \u2197'
+    },
+
+    /* ─── German ─── */
+    de: {
+      cart_title:       'Warenkorb',
+      close_cart:       'Warenkorb schlie\u00dfen',
+      open_cart:        'Warenkorb \u00f6ffnen',
+      subtotal:         'Zwischensumme',
+      checkout:         'Zur Kasse',
+      cart_empty:       'Dein Warenkorb ist leer \u2014 entdecke unsere Samenprodukte!',
+      loading:          'Laden\u2026',
+      loading_failed:   'Laden fehlgeschlagen.',
+      decrease_qty:     'Menge verringern',
+      increase_qty:     'Menge erh\u00f6hen',
+      min_qty_notice:   'F\u00fcge mindestens 6 Produkte oder ein Bundle hinzu, um fortzufahren.',
+      all_products:     '\u2190 Alle Produkte',
+      loading_products: 'Produkte werden geladen\u2026',
+      no_products:      'Keine Produkte gefunden.',
+      load_error:       'Produkte konnten nicht geladen werden. Bitte Seite neu laden.',
+      no_description:   'Keine Beschreibung verf\u00fcgbar.',
+      add_to_cart:      '+ in den Warenkorb',
+      adding:           'Hinzuf\u00fcgen\u2026',
+      added:            '\u2713 Hinzugef\u00fcgt!',
+      error_retry:      'Fehler \u2014 erneut',
+      try_again:        'Erneut versuchen',
+      sold_out:         'Ausverkauft',
+      see_more:         'mehr sehen \u2192',
+      open_in_store:    'im Shop \u00f6ffnen \u2197'
+    }
+  };
+
+  /* ── Language detection: localStorage → browser → 'nl' ── */
+  function detectLang() {
+    var saved = localStorage.getItem('mts_lang');
+    if (saved && TRANSLATIONS[saved]) return saved;
+    var browser = (navigator.language || '').split('-')[0].toLowerCase();
+    if (TRANSLATIONS[browser]) return browser;
+    return 'en';
+  }
+
+  window.mtsI18n  = TRANSLATIONS;
+  window.mtsLangs = LANGUAGES;
+  window.mtsLang  = detectLang();
+
+  /** Translate a key in the currently active language */
+  window.mtsT = function (key) {
+    var dict = TRANSLATIONS[window.mtsLang] || TRANSLATIONS.nl;
+    return (dict && dict[key] != null) ? dict[key] : key;
+  };
+
+  /** Change the active language, persist to localStorage, fire 'mts-lang-change' event */
+  window.mtsSetLang = function (code) {
+    if (!TRANSLATIONS[code]) return;
+    window.mtsLang = code;
+    localStorage.setItem('mts_lang', code);
+    document.dispatchEvent(new CustomEvent('mts-lang-change', { detail: { lang: code } }));
+  };
+}());
+</script>

@@ -1,0 +1,601 @@
+<!--
+  SNIPPET 1 — Shopify Cart Engine (hidden)
+  =========================================
+  Paste this as the FIRST HTML block on the shop page in mindcms.
+  This replaces your existing Buy Button snippet.
+
+  SETUP: Replace YOUR_STOREFRONT_TOKEN below with the storefrontAccessToken
+  from your existing Buy Button snippet in mindcms.
+-->
+
+<script>
+/*
+  Collapse the CMS block wrapper around this hidden snippet.
+*/
+(function () {
+  var el = document.currentScript && document.currentScript.parentElement;
+  if (!el || el === document.body) return;
+
+  while (el !== document.body) {
+    var p = el.parentElement;
+    if (!p || p === document.body) {
+      el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;';
+      break;
+    }
+    if (p.children.length > 1) {
+      el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;';
+      break;
+    }
+    el = p;
+  }
+}());
+</script>
+
+<script type="text/javascript">
+(function () {
+  var STOREFRONT_TOKEN = 'b56acd121e4029f0a8b9a13ff07e34af'; // ← Buy Button app token (SDK only)
+  /*
+   * CART_TOKEN — Storefront API token from a *custom app* (not Buy Button app).
+   * Needed so bundle products (not published to the Buy Button sales channel)
+   * can be added to the cart via the Storefront Cart API fallback.
+   *
+   * Shopify Admin → Settings → Apps → Develop apps → Create an app
+   *   → Configuration → Storefront API → enable:
+   *       unauthenticated_write_checkouts
+   *       unauthenticated_read_product_listings
+   *   → Install app → copy the Storefront API access token here.
+   */
+  var CART_TOKEN       = 'YOUR_CART_API_TOKEN_HERE'; // ← paste new custom-app token here
+  var DOMAIN           = 'meet-the-seeds.myshopify.com';
+  var SDK_URL          = 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
+  var CART_API_URL     = 'https://' + DOMAIN + '/api/2024-01/graphql.json';
+  var MTS_CART_KEY       = 'mts_sfcart_id';
+  var MTS_CART_COUNT_KEY = 'mts_sfcart_count';
+
+  /* ── STOREFRONT CART API (fallback when SDK drawer is unavailable) ── */
+  function storefrontRequest(query, variables) {
+    return fetch(CART_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': CART_TOKEN
+      },
+      body: JSON.stringify({ query: query, variables: variables })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function storefrontAddToCart(variantGid) {
+    var cartId = localStorage.getItem(MTS_CART_KEY);
+
+    if (cartId) {
+      return storefrontRequest(
+        'mutation cartLinesAdd($cartId:ID!,$lines:[CartLineInput!]!){cartLinesAdd(cartId:$cartId,lines:$lines){cart{id checkoutUrl}userErrors{message}}}',
+        { cartId: cartId, lines: [{ merchandiseId: variantGid, quantity: 1 }] }
+      ).then(function (d) {
+        var result = d.data && d.data.cartLinesAdd;
+        if (result && result.cart) return result.cart.checkoutUrl;
+        /* Cart expired — start fresh */
+        localStorage.removeItem(MTS_CART_KEY);
+        return storefrontAddToCart(variantGid);
+      });
+    }
+
+    return storefrontRequest(
+      'mutation cartCreate($input:CartInput!){cartCreate(input:$input){cart{id checkoutUrl}userErrors{message}}}',
+      { input: { lines: [{ merchandiseId: variantGid, quantity: 1 }] } }
+    ).then(function (d) {
+      var result = d.data && d.data.cartCreate;
+      if (result && result.cart) {
+        localStorage.setItem(MTS_CART_KEY, result.cart.id);
+        return result.cart.checkoutUrl;
+      }
+      var msg = result && result.userErrors && result.userErrors[0] && result.userErrors[0].message;
+      throw new Error(msg || 'Cart creation failed');
+    });
+  }
+
+  /*
+   * window.mtsAddToCart — called by snippet 2 "add to cart" buttons.
+   *
+   * Path A (preferred): SDK cart drawer is ready → adds via SDK, opens drawer.
+   * Path B (fallback):  SDK drawer not available → Storefront Cart API +
+   *                     custom mini-cart drawer (no page redirect).
+   *
+   * onSuccess(usedFallback: boolean)
+   * onError(err)
+   */
+  window.mtsAddToCart = function (variantGid, onSuccess, onError) {
+    var cart = window.mtsCartComponent;
+    if (cart && typeof cart.addVariantToCart === 'function') {
+      var p = cart.addVariantToCart({ id: variantGid }, 1);
+      if (p && typeof p.then === 'function') {
+        return p
+          .then(function () { cart.open(); onSuccess(false); })
+          .catch(function (sdkErr) {
+            console.warn('[MTS] SDK addVariantToCart failed, using mini-cart fallback:', sdkErr);
+            storefrontAddToCart(variantGid)
+              .then(function () { openMiniCart(); onSuccess(true); })
+              .catch(onError);
+          });
+      }
+    }
+    /* SDK cart not ready — use Storefront Cart API + custom mini-cart drawer */
+    storefrontAddToCart(variantGid)
+      .then(function () { openMiniCart(); onSuccess(true); })
+      .catch(onError);
+  };
+
+  /* ── CUSTOM MINI-CART DRAWER ─────────────────────────────────────────────
+   * A lightweight cart drawer that works without the Shopify Buy Button SDK.
+   * Cart state lives in the Storefront Cart API; cart ID persisted in
+   * localStorage under MTS_CART_KEY.
+   * ─────────────────────────────────────────────────────────────────────── */
+  function createMiniCartUI() {
+    var t = typeof window.mtsT === 'function' ? window.mtsT : function (k) { return k; };
+    /* Ensure theme fonts are available even when snippet 2 hasn't loaded yet */
+    if (!document.querySelector('link[href*="Abril+Fatface"]')) {
+      var pc1 = document.createElement('link'); pc1.rel = 'preconnect'; pc1.href = 'https://fonts.googleapis.com';
+      var pc2 = document.createElement('link'); pc2.rel = 'preconnect'; pc2.href = 'https://fonts.gstatic.com'; pc2.crossOrigin = '';
+      var fl  = document.createElement('link'); fl.rel = 'stylesheet';
+      fl.href = 'https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Assistant:wght@400;600&display=swap';
+      document.head.append(pc1, pc2, fl);
+    }
+
+    var style = document.createElement('style');
+    style.textContent =
+      '#mts-cart{position:fixed;inset:0;z-index:10000;pointer-events:none}' +
+      '#mts-cart.is-open{pointer-events:auto}' +
+      '.mts-cart__overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity .25s ease;cursor:pointer}' +
+      '#mts-cart.is-open .mts-cart__overlay{opacity:1}' +
+      '.mts-cart__drawer{position:absolute;top:0;right:0;bottom:0;width:380px;max-width:100vw;background:#fff;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;box-shadow:-4px 0 24px rgba(0,0,0,.15)}' +
+      '#mts-cart.is-open .mts-cart__drawer{transform:translateX(0)}' +
+      '.mts-cart__header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #edf0f7}' +
+      '.mts-cart__header-title{font-family:"Abril Fatface",serif;font-size:1.4rem;color:#1d3686;margin:0}' +
+      '.mts-cart__close{background:none;border:none;cursor:pointer;font-size:26px;line-height:1;color:#1d3686;padding:2px 8px;opacity:.55;transition:opacity .15s}' +
+      '.mts-cart__close:hover{opacity:1}' +
+      '.mts-cart__items{flex:1;overflow-y:auto;padding:8px 24px}' +
+      '.mts-cart__empty,.mts-cart__loading{font-family:"Assistant",sans-serif;color:#1d3686;opacity:.55;text-align:center;padding:40px 0;font-size:15px}' +
+      '.mts-cart__item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #f0f4fb;align-items:flex-start}' +
+      '.mts-cart__item:last-child{border-bottom:none}' +
+      '.mts-cart__item-img{width:64px;height:80px;object-fit:cover;border-radius:3px;flex-shrink:0;background:#f5f8fb}' +
+      '.mts-cart__item-body{flex:1;min-width:0}' +
+      '.mts-cart__item-title{font-family:"Assistant",sans-serif;font-weight:600;font-size:14px;color:#1d3686;margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.mts-cart__item-variant{font-family:"Assistant",sans-serif;font-size:12px;color:#1d3686;opacity:.6;margin:0 0 6px}' +
+      '.mts-cart__item-price{font-family:"Assistant",sans-serif;font-size:13px;color:#1d3686;font-weight:600;margin:0}' +
+      '.mts-cart__footer{padding:16px 24px 24px;border-top:1px solid #edf0f7}' +
+      '.mts-cart__subtotal{display:flex;justify-content:space-between;font-family:"Assistant",sans-serif;font-size:15px;font-weight:600;color:#1d3686;margin-bottom:14px}' +
+      '.mts-cart__checkout-btn{display:block;width:100%;padding:13px;background:#1d3686;color:#fff;border:none;border-radius:4px;font-family:"Assistant",sans-serif;font-size:14px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;text-align:center;text-decoration:none;cursor:pointer;transition:background .15s;box-sizing:border-box}' +
+      '.mts-cart__checkout-btn:hover{background:#152a6e}' +
+      '.mts-cart__item-qty{display:flex;align-items:center;gap:8px;margin-top:8px}' +
+      '.mts-cart__qty-btn{background:none;border:1.5px solid #1d3686;color:#1d3686;width:24px;height:24px;border-radius:3px;cursor:pointer;font-size:15px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;flex-shrink:0}' +
+      '.mts-cart__qty-btn:hover:not([disabled]){background:#1d3686;color:#fff}' +
+      '.mts-cart__qty-btn[disabled]{opacity:.4;cursor:default}' +
+      '.mts-cart__qty-num{font-family:"Assistant",sans-serif;font-size:13px;font-weight:600;color:#1d3686;min-width:20px;text-align:center}' +
+      '.mts-cart__toggle{position:absolute;right:100%;top:50%;transform:translateY(-50%);pointer-events:auto;width:48px;height:52px;border-radius:8px 0 0 8px;background:#1d3686;color:#fff;border:none;cursor:pointer;box-shadow:-3px 2px 12px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;transition:background .15s}' +
+      '.mts-cart__toggle:hover{background:#152a6e}' +
+      '.mts-cart__toggle-open,.mts-cart__toggle-close{width:26px;height:26px;flex-shrink:0}' +
+      '.mts-cart__toggle-close{display:none}' +
+      '#mts-cart.is-open .mts-cart__toggle-open{display:none}' +
+      '#mts-cart.is-open .mts-cart__toggle-close{display:block}' +
+      '.mts-cart__badge{position:absolute;top:6px;right:6px;background:#FFE000;color:#1d3686;font-family:"Assistant",sans-serif;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;pointer-events:none}' +
+      '@keyframes mts-badge-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}' +
+      '.mts-cart__toggle:hover .mts-cart__badge{animation:mts-badge-pulse .6s ease-in-out infinite}' +
+      '.mts-cart__min-qty-notice{font-family:"Assistant",sans-serif;font-size:13px;color:#1d3686;background:#fff8cc;border:1px solid #FFE000;border-radius:4px;padding:8px 12px;margin-bottom:10px;text-align:center;line-height:1.4}' +
+      '.mts-cart__checkout-btn--disabled{background:#9ba9c9!important;cursor:not-allowed!important;pointer-events:none!important;opacity:1!important}' +
+      '.mts-cart__lang-selector{display:flex;gap:6px;justify-content:center;padding-top:10px;margin-top:4px;border-top:1px solid #edf0f7}' +
+      '.mts-cart__lang-btn{background:none;border:none;cursor:pointer;font-size:22px;padding:2px 4px;border-radius:4px;opacity:.5;transition:opacity .15s,transform .15s;line-height:1}' +
+      '.mts-cart__lang-btn:hover{opacity:1;transform:scale(1.15)}' +
+      '.mts-cart__lang-btn--active{opacity:1}';
+    document.head.appendChild(style);
+
+    var el = document.createElement('div');
+    el.id  = 'mts-cart';
+    el.innerHTML =
+      '<div class="mts-cart__overlay"></div>' +
+      '<aside class="mts-cart__drawer">' +
+        '<button id="mts-cart-toggle" class="mts-cart__toggle" aria-label="' + t('open_cart') + '">'   +
+          '<svg class="mts-cart__toggle-open" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.1 17 7 17h13v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H18c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 22.46 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>' +
+          '<svg class="mts-cart__toggle-close" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>' +
+          '<span class="mts-cart__badge" style="display:none"></span>' +
+        '</button>' +
+        '<div class="mts-cart__header">' +
+          '<h2 class="mts-cart__header-title">' + t('cart_title') + '</h2>' +
+          '<button class="mts-cart__close" aria-label="' + t('close_cart') + '">\u00d7</button>' +
+        '</div>' +
+        '<div class="mts-cart__items"></div>' +
+        '<div class="mts-cart__footer" style="display:none">' +
+          '<div class="mts-cart__subtotal"><span class="mts-cart__subtotal-label">' + t('subtotal') + '</span><span class="mts-cart__subtotal-amount"></span></div>' +
+          '<p class="mts-cart__min-qty-notice" style="display:none"></p>' +
+          '<a class="mts-cart__checkout-btn" href="#" target="_blank">' + t('checkout') + '</a>' +
+          '<div class="mts-cart__lang-selector"></div>' +
+        '</div>' +
+      '</aside>';
+    document.body.appendChild(el);
+
+    el.querySelector('#mts-cart-toggle').addEventListener('click', function () {
+      if (el.classList.contains('is-open')) { closeMiniCart(); } else { openMiniCart(); }
+    });
+    el.querySelector('.mts-cart__overlay').addEventListener('click', closeMiniCart);
+    el.querySelector('.mts-cart__close').addEventListener('click', closeMiniCart);
+
+    /* Language selector buttons */
+    el.addEventListener('click', function (e) {
+      var btn = e.target.closest('.mts-cart__lang-btn');
+      if (!btn) return;
+      if (typeof window.mtsSetLang === 'function') window.mtsSetLang(btn.dataset.lang);
+    });
+
+    /* Quantity +/- buttons — event delegation on the whole drawer */
+    el.addEventListener('click', function (e) {
+      var btn = e.target.closest('.mts-cart__qty-btn');
+      if (!btn || btn.disabled) return;
+      var lineId  = btn.dataset.lineId;
+      var qtyEl   = btn.closest('.mts-cart__item-qty').querySelector('.mts-cart__qty-num');
+      var current = parseInt(qtyEl.textContent, 10);
+      var newQty  = btn.dataset.action === 'inc' ? current + 1 : current - 1;
+      /* Optimistic update: show new number and lock buttons while request is in-flight */
+      qtyEl.textContent = Math.max(0, newQty);
+      btn.closest('.mts-cart__item-qty').querySelectorAll('.mts-cart__qty-btn').forEach(function (b) { b.disabled = true; });
+      updateCartLineQty(lineId, newQty);
+    });
+  }
+
+  function openMiniCart() {
+    var el = document.getElementById('mts-cart');
+    if (el) { el.classList.add('is-open'); renderMiniCart(); }
+  }
+
+  function closeMiniCart() {
+    var el = document.getElementById('mts-cart');
+    if (el) el.classList.remove('is-open');
+  }
+
+  function updateCartBadge(count) {
+    var badge = document.querySelector('#mts-cart-toggle .mts-cart__badge');
+    if (!badge) return;
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : String(count);
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
+    localStorage.setItem(MTS_CART_COUNT_KEY, String(count));
+  }
+
+  function updateCartLineQty(lineId, newQty) {
+    var cartId = localStorage.getItem(MTS_CART_KEY);
+    if (!cartId) return;
+    if (newQty < 1) {
+      storefrontRequest(
+        'mutation cartLinesRemove($cartId:ID!,$lineIds:[ID!]!){cartLinesRemove(cartId:$cartId,lineIds:$lineIds){cart{id}userErrors{message}}}',
+        { cartId: cartId, lineIds: [lineId] }
+      ).then(function () { renderMiniCart(); })
+       .catch(function (err) { console.error('[MTS] cartLinesRemove error:', err); renderMiniCart(); });
+    } else {
+      storefrontRequest(
+        'mutation cartLinesUpdate($cartId:ID!,$lines:[CartLineUpdateInput!]!){cartLinesUpdate(cartId:$cartId,lines:$lines){cart{id}userErrors{message}}}',
+        { cartId: cartId, lines: [{ id: lineId, quantity: newQty }] }
+      ).then(function () { renderMiniCart(); })
+       .catch(function (err) { console.error('[MTS] cartLinesUpdate error:', err); renderMiniCart(); });
+    }
+  }
+
+  function renderMiniCart() {
+    var t       = typeof window.mtsT === 'function' ? window.mtsT : function (k) { return k; };
+    var cartId  = localStorage.getItem(MTS_CART_KEY);
+    var itemsEl = document.querySelector('#mts-cart .mts-cart__items');
+    var footer  = document.querySelector('#mts-cart .mts-cart__footer');
+    if (!itemsEl) return;
+
+    if (!cartId) {
+      itemsEl.innerHTML = '<p class="mts-cart__empty">' + t('cart_empty') + '</p>';
+      if (footer) footer.style.display = 'none';
+      updateCartBadge(0);
+      return;
+    }
+
+    itemsEl.innerHTML = '<p class="mts-cart__loading">' + t('loading') + '</p>';
+    if (footer) footer.style.display = 'none';
+
+    storefrontRequest(
+      'query GetCart($id:ID!){cart(id:$id){checkoutUrl cost{subtotalAmount{amount}}lines(first:20){edges{node{id quantity merchandise{...on ProductVariant{title priceV2{amount}image{url altText}product{title handle}}}}}}}}',
+      { id: cartId }
+    ).then(function (d) {
+      var cart = d.data && d.data.cart;
+      if (!cart) {
+        localStorage.removeItem(MTS_CART_KEY);
+        itemsEl.innerHTML = '<p class="mts-cart__empty">' + t('cart_empty') + '</p>';
+        updateCartBadge(0);
+        return;
+      }
+
+      var link = document.querySelector('#mts-cart .mts-cart__checkout-btn');
+      if (link) link.href = cart.checkoutUrl;
+
+      var lines = cart.lines.edges;
+      if (!lines.length) {
+        itemsEl.innerHTML = '<p class="mts-cart__empty">' + t('cart_empty') + '</p>';
+        updateCartBadge(0);
+        return;
+      }
+
+      itemsEl.innerHTML = lines.map(function (edge) {
+        var item  = edge.node;
+        var m     = item.merchandise;
+        return '<div class="mts-cart__item">' +
+          (m.image
+            ? '<img class="mts-cart__item-img" src="' + m.image.url + '" alt="' + (m.image.altText || m.product.title) + '">'
+            : '<div class="mts-cart__item-img"></div>') +
+          '<div class="mts-cart__item-body">' +
+            '<p class="mts-cart__item-title">' + m.product.title + '</p>' +
+            (m.title !== 'Default Title' ? '<p class="mts-cart__item-variant">' + m.title + '</p>' : '') +
+            '<p class="mts-cart__item-price">\u20ac' + parseFloat(m.priceV2.amount).toFixed(2).replace('.', ',') + '</p>' +
+            '<div class="mts-cart__item-qty">' +
+              '<button class="mts-cart__qty-btn" data-line-id="' + item.id + '" data-action="dec" aria-label="' + t('decrease_qty') + '">\u2212</button>' +
+              '<span class="mts-cart__qty-num">' + item.quantity + '</span>' +
+              '<button class="mts-cart__qty-btn" data-line-id="' + item.id + '" data-action="inc" aria-label="' + t('increase_qty') + '">+</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      var subtotalEl = document.querySelector('#mts-cart .mts-cart__subtotal-amount');
+      if (subtotalEl && cart.cost) {
+        subtotalEl.textContent = '\u20ac' + parseFloat(cart.cost.subtotalAmount.amount).toFixed(2).replace('.', ',');
+      }
+      var totalQty = lines.reduce(function (n, e) { return n + e.node.quantity; }, 0);
+      updateCartBadge(totalQty);
+      if (footer) footer.style.display = '';
+
+      /* ── MINIMUM ORDER QUANTITY ── */
+      var hasBundle = lines.some(function (e) {
+        var handle = e.node.merchandise && e.node.merchandise.product && e.node.merchandise.product.handle;
+        return handle && handle.indexOf('bundle') !== -1;
+      });
+      var minQtyMet = totalQty >= 6 || hasBundle;
+      var noticeEl    = document.querySelector('#mts-cart .mts-cart__min-qty-notice');
+      var checkoutBtn = document.querySelector('#mts-cart .mts-cart__checkout-btn');
+      if (noticeEl) {
+        if (minQtyMet) {
+          noticeEl.style.display = 'none';
+        } else {
+          noticeEl.textContent = t('min_qty_notice');
+          noticeEl.style.display = '';
+        }
+      }
+      if (checkoutBtn) {
+        if (minQtyMet) {
+          checkoutBtn.classList.remove('mts-cart__checkout-btn--disabled');
+          checkoutBtn.removeAttribute('aria-disabled');
+          checkoutBtn.textContent = t('checkout');
+        } else {
+          checkoutBtn.classList.add('mts-cart__checkout-btn--disabled');
+          checkoutBtn.setAttribute('aria-disabled', 'true');
+        }
+      }
+    }).catch(function (err) {
+      console.error('[MTS] renderMiniCart error:', err);
+      itemsEl.innerHTML = '<p class="mts-cart__empty">' + t('loading_failed') + '</p>';
+    });
+  }
+
+  function refreshCartTexts() {
+    var t         = typeof window.mtsT === 'function' ? window.mtsT : function (k) { return k; };
+    var cart      = document.getElementById('mts-cart');
+    if (!cart) return;
+    var titleEl       = cart.querySelector('.mts-cart__header-title');
+    var closeBtn      = cart.querySelector('.mts-cart__close');
+    var toggleBtn     = cart.querySelector('#mts-cart-toggle');
+    var subtotalLabel = cart.querySelector('.mts-cart__subtotal-label');
+    var checkoutBtn   = cart.querySelector('.mts-cart__checkout-btn');
+    var noticeEl      = cart.querySelector('.mts-cart__min-qty-notice');
+    var langSelector  = cart.querySelector('.mts-cart__lang-selector');
+    if (titleEl)       titleEl.textContent = t('cart_title');
+    if (closeBtn)      closeBtn.setAttribute('aria-label', t('close_cart'));
+    if (toggleBtn)     toggleBtn.setAttribute('aria-label', t('open_cart'));
+    if (subtotalLabel) subtotalLabel.textContent = t('subtotal');
+    if (checkoutBtn && !checkoutBtn.classList.contains('mts-cart__checkout-btn--disabled')) {
+      checkoutBtn.textContent = t('checkout');
+    }
+    if (noticeEl && noticeEl.style.display !== 'none') {
+      noticeEl.textContent = t('min_qty_notice');
+    }
+    /* Rebuild language selector buttons */
+    if (langSelector) {
+      var langs = window.mtsLangs || [
+        { code: 'nl', flag: '\uD83C\uDDF3\uD83C\uDDF1', label: 'Nederlands' },
+        { code: 'en', flag: '\uD83C\uDDEC\uD83C\uDDE7', label: 'English'    },
+        { code: 'de', flag: '\uD83C\uDDE9\uD83C\uDDEA', label: 'Deutsch'    }
+      ];
+      langSelector.innerHTML = langs.map(function (l) {
+        var active = (window.mtsLang === l.code) ? ' mts-cart__lang-btn--active' : '';
+        return '<button class="mts-cart__lang-btn' + active + '" data-lang="' + l.code +
+          '" aria-label="' + l.label + '" title="' + l.label + '">' + l.flag + '</button>';
+      }).join('');
+    }
+  }
+
+  /* Inject the mini-cart drawer into the DOM immediately */
+  createMiniCartUI();
+  refreshCartTexts();
+
+  /* Re-render UI text when language changes (requires snippet 3) */
+  document.addEventListener('mts-lang-change', function () {
+    refreshCartTexts();
+    var cartEl = document.getElementById('mts-cart');
+    if (cartEl && cartEl.classList.contains('is-open')) renderMiniCart();
+  });
+
+  /* Restore badge count from the previous session */
+  (function () {
+    var n = parseInt(localStorage.getItem(MTS_CART_COUNT_KEY) || '0', 10);
+    if (n > 0) updateCartBadge(n);
+  }());
+
+  function init() {
+    var client = ShopifyBuy.buildClient({ domain: DOMAIN, storefrontAccessToken: STOREFRONT_TOKEN });
+
+    /*
+     * The cart node MUST live directly on <body>.
+     * If it is placed inside the hidden CMS block wrapper the SDK renders the
+     * cart drawer (position:fixed) inside a display:none ancestor, making it
+     * permanently invisible even after cart.open() is called.
+     */
+    var cartNode = document.createElement('div');
+    document.body.appendChild(cartNode);
+
+    ShopifyBuy.UI.onReady(client).then(function (ui) {
+      window.mtsShopifyUI = ui;
+
+      return ui.createComponent('cart', {
+        node: cartNode,
+        moneyFormat: '%E2%82%AC%7B%7Bamount_with_comma_separator%7D%7D',
+        options: {
+          cart: {
+            styles: {
+              /* Checkout button — royal blue */
+              button: {
+                'background-color': '#1d3686',
+                'color': '#ffffff',
+                'font-family': 'Assistant, sans-serif',
+                'font-weight': '600',
+                'letter-spacing': '0.05em',
+                'text-transform': 'uppercase',
+                'border-radius': '4px',
+                ':hover': { 'background-color': '#152a6e' },
+                ':focus': { 'background-color': '#152a6e' }
+              },
+              /* Cart title */
+              title: {
+                'color': '#1d3686',
+                'font-family': 'Abril Fatface, serif'
+              },
+              /* Cart header row */
+              header: {
+                'color': '#1d3686'
+              },
+              /* Close (×) button */
+              close: {
+                'color': '#1d3686',
+                ':hover': { 'color': '#152a6e' }
+              },
+              /* "Subtotaal" label */
+              subtotalText: {
+                'color': '#1d3686',
+                'font-family': 'Assistant, sans-serif'
+              },
+              /* Subtotal price */
+              subtotal: {
+                'color': '#1d3686',
+                'font-family': 'Assistant, sans-serif',
+                'font-weight': '600'
+              },
+              /* Empty-cart message */
+              empty: {
+                'color': '#1d3686',
+                'font-family': 'Assistant, sans-serif'
+              },
+              /* Small legal notice below checkout button */
+              notice: {
+                'color': '#1d3686'
+              },
+              currency: {
+                'color': '#1d3686'
+              }
+            },
+            text: {
+              title: 'Jouw winkelwagen',
+              total: 'Subtotaal',
+              button: 'Afrekenen',
+              empty: 'Je winkelwagen is leeg.'
+            }
+          },
+          /* Styling for each line item in the cart */
+          lineItem: {
+            styles: {
+              title: {
+                'color': '#1d3686',
+                'font-family': 'Assistant, sans-serif',
+                'font-weight': '600'
+              },
+              variantTitle: {
+                'color': '#1d3686',
+                'font-family': 'Assistant, sans-serif'
+              },
+              price: {
+                'color': '#1d3686',
+                'font-family': 'Assistant, sans-serif',
+                'font-weight': '600'
+              },
+              fullPrice: {
+                'color': '#1d3686'
+              },
+              /* Quantity controls — outlined in royal blue */
+              quantity: {
+                'color': '#1d3686',
+                'border-color': '#1d3686',
+                'font-family': 'Assistant, sans-serif'
+              },
+              quantityInput: {
+                'color': '#1d3686',
+                'border-color': '#1d3686'
+              },
+              quantityIncrement: {
+                'color': '#1d3686',
+                'border-color': '#1d3686',
+                ':hover': { 'background-color': '#1d3686', 'color': '#ffffff' },
+                ':focus': { 'background-color': '#1d3686', 'color': '#ffffff' }
+              },
+              quantityDecrement: {
+                'color': '#1d3686',
+                'border-color': '#1d3686',
+                ':hover': { 'background-color': '#1d3686', 'color': '#ffffff' },
+                ':focus': { 'background-color': '#1d3686', 'color': '#ffffff' }
+              }
+            }
+          },
+          /* Cart toggle/icon button (shown if the SDK adds one) */
+          toggle: {
+            styles: {
+              toggle: {
+                'background-color': '#1d3686',
+                ':hover': { 'background-color': '#152a6e' },
+                ':focus': { 'background-color': '#152a6e' }
+              },
+              count: {
+                'color': '#ffffff',
+                ':hover': { 'color': '#ffffff' }
+              },
+              iconPath: {
+                'fill': '#ffffff'
+              }
+            }
+          }
+        }
+      });
+    }).then(function (cart) {
+      window.mtsCartComponent = cart;
+      window.mtsShopifyReady = true;
+      document.dispatchEvent(new CustomEvent('mts-shopify-ready'));
+    }).catch(function (err) {
+      /* Ensure snippet 2 is never left waiting if initialisation fails */
+      console.error('[MTS cart] initialisation failed:', err);
+      window.mtsShopifyReady = true;
+      document.dispatchEvent(new CustomEvent('mts-shopify-ready'));
+    });
+  }
+
+  if (window.ShopifyBuy && window.ShopifyBuy.UI) {
+    init();
+  } else {
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = SDK_URL;
+    s.onload = init;
+    document.head.appendChild(s);
+  }
+})();
+</script>
