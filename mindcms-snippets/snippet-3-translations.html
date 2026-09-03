@@ -1,22 +1,17 @@
 <script>
 /*
-  Collapse the CMS block wrapper around this hidden snippet.
+  Collapse CMS section and block wrapper around this hidden snippet.
 */
 (function () {
   var el = document.currentScript && document.currentScript.parentElement;
-  if (!el || el === document.body) return;
-
-  while (el !== document.body) {
-    var p = el.parentElement;
-    if (!p || p === document.body) {
-      el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;';
-      break;
-    }
-    if (p.children.length > 1) {
-      el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;';
-      break;
-    }
-    el = p;
+  if (!el) return;
+  var sec = el.closest('section, .stroke, [id^="stroke-"], [id^="section-"]') || el.closest('.container') || el;
+  if (sec && sec !== document.body) {
+    sec.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;border:none!important;';
+  }
+  while (el && el !== document.body && el !== sec) {
+    el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;border:none!important;';
+    el = el.parentElement;
   }
 }());
 </script>

@@ -10,23 +10,18 @@
 
 <script>
 /*
-  Collapse the CMS block wrapper around this hidden snippet.
+  Collapse CMS section and block wrapper around this hidden snippet.
 */
 (function () {
   var el = document.currentScript && document.currentScript.parentElement;
-  if (!el || el === document.body) return;
-
-  while (el !== document.body) {
-    var p = el.parentElement;
-    if (!p || p === document.body) {
-      el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;';
-      break;
-    }
-    if (p.children.length > 1) {
-      el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;';
-      break;
-    }
-    el = p;
+  if (!el) return;
+  var sec = el.closest('section, .stroke, [id^="stroke-"], [id^="section-"]') || el.closest('.container') || el;
+  if (sec && sec !== document.body) {
+    sec.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;border:none!important;';
+  }
+  while (el && el !== document.body && el !== sec) {
+    el.style.cssText = 'display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;border:none!important;';
+    el = el.parentElement;
   }
 }());
 </script>
@@ -54,11 +49,12 @@
 
   /* ── STOREFRONT CART API (fallback when SDK drawer is unavailable) ── */
   function storefrontRequest(query, variables) {
+    var token = (CART_TOKEN && CART_TOKEN !== 'YOUR_CART_API_TOKEN_HERE') ? CART_TOKEN : STOREFRONT_TOKEN;
     return fetch(CART_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': CART_TOKEN
+        'X-Shopify-Storefront-Access-Token': token
       },
       body: JSON.stringify({ query: query, variables: variables })
     }).then(function (r) {
@@ -98,34 +94,53 @@
   }
 
   /*
-   * window.mtsAddToCart — called by snippet 2 "add to cart" buttons.
+   * window.mtsAddToCart — called by snippet 2 & inspiration snippet "add to cart" buttons.
    *
    * Path A (preferred): SDK cart drawer is ready → adds via SDK, opens drawer.
    * Path B (fallback):  SDK drawer not available → Storefront Cart API +
    *                     custom mini-cart drawer (no page redirect).
-   *
-   * onSuccess(usedFallback: boolean)
-   * onError(err)
+   * Path C (direct):    Direct Shopify cart URL if API fails.
    */
-  window.mtsAddToCart = function (variantGid, onSuccess, onError) {
+  window.mtsAddToCart = function (variantId, onSuccess, onError) {
+    var rawId = variantId ? variantId.toString().replace(/\D/g, '') : '';
+    var gid = 'gid://shopify/ProductVariant/' + rawId;
     var cart = window.mtsCartComponent;
+
     if (cart && typeof cart.addVariantToCart === 'function') {
-      var p = cart.addVariantToCart({ id: variantGid }, 1);
+      var p = cart.addVariantToCart({ id: rawId }, 1);
       if (p && typeof p.then === 'function') {
         return p
-          .then(function () { cart.open(); onSuccess(false); })
+          .then(function () {
+            cart.open();
+            if (typeof onSuccess === 'function') onSuccess(false);
+          })
           .catch(function (sdkErr) {
             console.warn('[MTS] SDK addVariantToCart failed, using mini-cart fallback:', sdkErr);
-            storefrontAddToCart(variantGid)
-              .then(function () { openMiniCart(); onSuccess(true); })
-              .catch(onError);
+            storefrontAddToCart(gid)
+              .then(function () {
+                openMiniCart();
+                if (typeof onSuccess === 'function') onSuccess(true);
+              })
+              .catch(function (sfErr) {
+                console.warn('[MTS] Fallback to direct Shopify cart link:', sfErr);
+                window.open('https://' + DOMAIN + '/cart/' + rawId + ':1', '_blank');
+                if (typeof onSuccess === 'function') onSuccess(true);
+              });
           });
       }
     }
-    /* SDK cart not ready — use Storefront Cart API + custom mini-cart drawer */
-    storefrontAddToCart(variantGid)
-      .then(function () { openMiniCart(); onSuccess(true); })
-      .catch(onError);
+
+    /* SDK cart not ready — try Storefront Cart API or direct link */
+    storefrontAddToCart(gid)
+      .then(function () {
+        openMiniCart();
+        if (typeof onSuccess === 'function') onSuccess(true);
+      })
+      .catch(function (err) {
+        console.warn('[MTS] Fallback to direct Shopify cart link:', err);
+        window.open('https://' + DOMAIN + '/cart/' + rawId + ':1', '_blank');
+        if (typeof onSuccess === 'function') onSuccess(true);
+      });
   };
 
   /* ── CUSTOM MINI-CART DRAWER ─────────────────────────────────────────────
