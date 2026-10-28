@@ -1,0 +1,1 @@
+var STOREFRONT_TOKEN = 'b56acd121e4029f0a8b9a13ff07e34af';
